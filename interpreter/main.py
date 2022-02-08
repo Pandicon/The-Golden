@@ -36,7 +36,6 @@ class Validator:
 		p = None
 		t = lex.next()
 		while t:
-			print(t)
 			p = t
 			t = lex.next()
 		if not re.match(":\r?\n?", p[0]):
@@ -57,6 +56,7 @@ class Parser:
 				continue
 			self.commands.append(t[0])
 			t = lex.next()
+		print("Commands:")
 		print(self.commands)
 
 class AUI:
@@ -70,7 +70,6 @@ class AUI:
 		p = None
 		t = lex.next()
 		while t:
-			print(t)
 			if t[0] == "!":
 				self.linea[self.ptra] += 1
 			if t[0] == "^":
@@ -82,7 +81,6 @@ class AUI:
 
 if __name__ == "__main__":
 	args = sys.argv
-	print(args)
 	debug_heavy = False
 	flags = []
 	possible_flags = [
@@ -104,6 +102,7 @@ if __name__ == "__main__":
 		program = file.read()
 		file.close()
 
+	print("Program:")
 	print(repr(program))
 
 	valid_commands = [
