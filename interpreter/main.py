@@ -3,6 +3,48 @@ from copy import deepcopy
 import os
 import re
 
+class BracketsMatcher:
+	def __init__(self):
+		self.brackets = {
+			"while": {},
+			"do_while": {}
+		}
+		self.brackets_mem = []
+		self.bracket_keys = {
+			"[": "while",
+			"]": "while",
+			"[@": "do_while",
+			"@]": "do_while"
+		}
+		self.ending_brackets_keys = {
+			"while": "]",
+			"do_while": "@]"
+		}
+
+	def match(self, code):
+		for i in range(len(code)):
+			char = code[i]
+			if not char in ["[", "]", "[@", "@]"]:
+				continue
+			if char in ["[", "[@"]:
+				self.brackets_mem.append([char, i, 0])
+			for key in range(len(self.brackets_mem)):
+				self.brackets_mem[key][2] += self.num_equals(self.brackets_mem[key][0], char)
+				wanted_end = self.ending_brackets_keys[self.bracket_keys[self.brackets_mem[key][0]]]
+				if self.brackets_mem[key][2] == 0 and char == wanted_end:
+					cat = self.bracket_keys[wanted_end]
+					self.brackets[cat][self.brackets_mem[key][1]] = i
+					self.brackets[cat][i] = self.brackets_mem[key][1]
+					self.brackets_mem.pop(key)
+
+			
+	def num_equals(self, left, right):
+		if self.bracket_keys[left] != self.bracket_keys[right]:
+			return 0
+		if left == right:
+			return 1
+		return -1
+
 class Lexer:
 	def __init__(self, text, rules, file):
 		self.text = text
@@ -23,14 +65,14 @@ class Lexer:
 		for r in self.rules:
 			m = re.match(r, t)
 			if m:
-				s = m.group(0)
-				self.pos += len(s)
-				if '\n' in s:
-					self.line += s.count('\n')
-					self.column += len(s.rsplit('\n', 1)[-1])
+				command = m.group(0)
+				self.pos += len(command)
+				if '\n' in command:
+					self.line += command.count('\n')
+					self.column += len(command.rsplit('\n', 1)[-1])
 				else:
-					self.column += len(s)
-				return (s, self.line, self.column)
+					self.column += len(command)
+				return (command, self.line, self.column, self.file)
 		raise_error(("Syntax error at %d:%d in %s" % (self.line, self.column, self.file)), 1)
 
 class Validator:
@@ -48,6 +90,7 @@ class Parser:
 		self.whiles = {}
 		self.do_whiles = {}
 		self.commands = []
+		self.commands_info = []
 
 	def run(self, lex: Lexer):
 		t = lex.next()
@@ -56,10 +99,9 @@ class Parser:
 			if '"' in t[0] or ":" in t[0]:
 				t = lex.next()
 				continue
+			self.commands_info.append(t)
 			self.commands.append(t[0])
 			t = lex.next()
-		print("Commands:")
-		print(self.commands)
 
 class AUI:
 	def __init__(self):
@@ -99,6 +141,9 @@ class Runner:
 			"\$",
 			"\^"
 		]
+		self.commands = []
+		self.commands_info = []
+		self.brackets = []
 
 	def run_file(self, file_path):
 		file = open(os.path.join(path, file_path), "r")
@@ -110,13 +155,24 @@ class Runner:
 		self.run(program, "<input_main>")
 
 	def run(self, program, file):
+		print("Program:")
 		print(repr(program))
 		lexer = Lexer(program, self.valid_commands, file)
 		validator = Validator()
 		validator.run(deepcopy(lexer))
 		parser = Parser()
 		parser.run(deepcopy(lexer))
-		commands = parser.commands
+		self.commands = parser.commands
+		self.commands_info = parser.commands_info
+		print("Commands:")
+		print(self.commands)
+		print("Commands info:")
+		print(self.commands_info)
+		brackets_matcher = BracketsMatcher()
+		brackets_matcher.match(self.commands)
+		self.brackets = brackets_matcher.brackets
+		print("Brackets:")
+		print(self.brackets)
 
 class Warner:
 	def __init__(self, flags):
