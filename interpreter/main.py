@@ -1,5 +1,5 @@
 import sys
-import os
+from copy import deepcopy
 import re
 
 class Lexer:
@@ -30,6 +30,34 @@ class Lexer:
 					self.column += len(s)
 				return (s, self.line, self.column)
 		raise SyntaxError("Syntax error at %d:%d" % (self.line, self.column))
+
+class Validator:
+	def run(self, lex: Lexer):
+		p = None
+		t = lex.next()
+		while t:
+			print(t)
+			p = t
+			t = lex.next()
+		if not re.match(":\r?\n?", p[0]):
+			raise SyntaxError("Syntax error at %d:%d" % (lex.line, lex.column))
+
+class Parser:
+	def __init__(self):
+		self.whiles = {}
+		self.do_whiles = {}
+		self.commands = []
+
+	def run(self, lex: Lexer):
+		t = lex.next()
+		while t:
+			print(t)
+			if '"' in t[0] or ":" in t[0]:
+				t = lex.next()
+				continue
+			self.commands.append(t[0])
+			t = lex.next()
+		print(self.commands)
 
 class AUI:
 	def __init__(self):
@@ -95,5 +123,9 @@ if __name__ == "__main__":
 		"\^"
 	]
 	lexer = Lexer(program, valid_commands)
+	validator = Validator()
+	validator.run(deepcopy(lexer))
+	parser = Parser()
+	parser.run(deepcopy(lexer))
 	i = AUI()
-	i.run(lexer)
+	i.run(deepcopy(lexer))
