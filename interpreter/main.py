@@ -1,15 +1,17 @@
 import sys
 from copy import deepcopy
+import os
 import re
 
 class Lexer:
-	def __init__(self, text, rules):
+	def __init__(self, text, rules, file):
 		self.text = text
 		self.rules = rules
 		self.line = 1
 		self.column = 1
 		self.pos = 0
 		self.comment = False
+		self.file = file
 	def next(self):
 		t = self.text[self.pos:]
 		if len(t) < 1:
@@ -29,7 +31,7 @@ class Lexer:
 				else:
 					self.column += len(s)
 				return (s, self.line, self.column)
-		raise SyntaxError("Syntax error at %d:%d" % (self.line, self.column))
+		raise SyntaxError("Syntax error at %d:%d in %s" % (self.line, self.column, self.file))
 
 class Validator:
 	def run(self, lex: Lexer):
@@ -79,15 +81,48 @@ class AUI:
 		if p[0] != ":" and p[0] != ":\n" and p[0] != ":\r\n":
 			raise SyntaxError("Syntax error at %d:%d" % (lex.line, lex.column))
 
+class Runner:
+	def __init__(self, root_path):
+		self.root_path = root_path
+
+	def run_file(self, file_path):
+		pass
+
+	def run_user_input(self, input):
+		self.run()
+
+	def run(self, input):
+		pass
+
+class Warner:
+	def __init__(self, flags):
+		self.disabled = []
+		for flag in flags:
+			flag = flag.lower()
+			if flag == "--disable-warnings":
+				self.disabled.append("all")
+			elif flag == "--disable-path-warning":
+				self.disabled.append("path")
+
+	def warn(self, warning_type):
+		if "all" in self.disabled or warning_type in self.disabled:
+			return
+		if warning_type == "path":
+			print("Warning: No code path supplied, this will make it impossible to run files from the code (you can use the --disable-warnings flag to disable all warnings or --disable-path-warning to disable this particular warning")
+			return
+
 if __name__ == "__main__":
 	args = sys.argv
 	debug_heavy = False
 	flags = []
 	possible_flags = [
 		"--debug",
-		"-"
+		"-",
+		"--disable-warnings",
+		"--disable-path-warning"
 	]
 	args_amount = len(args)
+	path = None
 	for i in range(0, args_amount):
 		arg = args[i]
 		if arg == "-" and not "-" in flags and i < args_amount - 1:
@@ -97,10 +132,16 @@ if __name__ == "__main__":
 		if arg in possible_flags:
 			flags.append(arg)
 	if not "-" in flags:
-		path = input("Input the complete path to your maumivu.au file: ") if args_amount < 2 else args[1]
-		file = open(path + ("" if path.endswith("maumivu.au") else "\maumivu.au"), "r")
+		path: str = input("Input the complete path to your maumivu.au file: ") if args_amount < 2 else args[1]
+		if path.endswith("maumivu.au"):
+			path = path[0:-10]
+		file = open(os.path.join(path, "maumivu.au"), "r")
 		program = file.read()
 		file.close()
+
+	warner = Warner(flags)
+	if path == None:
+		warner.warn("path")
 
 	print("Program:")
 	print(repr(program))
@@ -120,7 +161,7 @@ if __name__ == "__main__":
 		"\$",
 		"\^"
 	]
-	lexer = Lexer(program, valid_commands)
+	lexer = Lexer(program, valid_commands, "maumivu.au")
 	validator = Validator()
 	validator.run(deepcopy(lexer))
 	parser = Parser()
