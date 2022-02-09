@@ -112,7 +112,7 @@ class Parser:
 			t = lex.next()
 
 class Runner:
-	def __init__(self, root_path):
+	def __init__(self, root_path, warner):
 		self.root_path = root_path
 		self.valid_commands = [
 			# (\|[0-9]*\|)? lets you do |x|<command>, which will execute the command x times (leaving it empty will execute it <active cell value>.floor() times)
@@ -150,16 +150,19 @@ class Runner:
 			"+": "-",
 			"-": "+",
 			"*": "/",
-			"/": "*"
+			"/": "*",
+			">": "<",
+			"<": ">"
 		}
 		self.commands = []
 		self.commands_info = []
 		self.brackets = []
-		self.memory = [[2.0], [5.0]]
+		self.memory = [[0.0], [0.0]]
 		self.pointers_mem = [0, 0]
 		self.active_mem = 0
 		self.program_pointer = 0
 		self.loops = []
+		self.warner = warner
 
 	def run_file(self, file_path):
 		file = open(os.path.join(path, file_path), "r")
@@ -227,6 +230,15 @@ class Runner:
 				main_mem[main_act][main_mem_ptr[main_act]] *= main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
 			if command == "/":
 				main_mem[main_act][main_mem_ptr[main_act]] /= main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
+			if command == ">":
+				main_mem_ptr[main_act] += 1
+				if main_mem_ptr[main_act] >= len(main_mem[main_act]):
+					main_mem[main_act].append(0.0)
+			if command == "<":
+				main_mem_ptr[main_act] -= 1
+				if main_mem_ptr[main_act] < 0:
+					main_mem[main_act].insert(0, 0.0)
+					self.warner.warn("too-left-pointer")
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
@@ -243,13 +255,17 @@ class Warner:
 				self.disabled.append("all")
 			elif flag == "--disable-path-warning":
 				self.disabled.append("path")
+			elif flag == "--disable-too-left-pointer-warning":
+				self.disabled.append("too-left-pointer")
 
 	def warn(self, warning_type):
 		if "all" in self.disabled or warning_type in self.disabled:
 			return
 		if warning_type == "path":
-			print("Warning: No code path supplied, this will make it impossible to run files from the code (you can use the --disable-warnings flag to disable all warnings or --disable-path-warning to disable this particular warning")
+			print("Warning: No code path supplied, this will make it impossible to run files from the code (you can use the --disable-warnings flag to disable all warnings or --disable-path-warning to disable this particular warning)")
 			return
+		if warning_type == "too-left-pointer":
+			print("You moved to the -1 index in memory. This will not crash the program, but should generally be avoided (you can use the --disable-warnings flag to disable all warnings or --disable-too-left-pointer-warning to disable this particular warning)")
 
 def raise_error(text, code = 1):
 		print(text)
@@ -263,7 +279,8 @@ if __name__ == "__main__":
 		"--debug",
 		"-",
 		"--disable-warnings",
-		"--disable-path-warning"
+		"--disable-path-warning",
+		"--disable-too-left-pointer-warning"
 	]
 	args_amount = len(args)
 	path = None
@@ -285,7 +302,7 @@ if __name__ == "__main__":
 	if path == None:
 		warner.warn("path")
 
-	runner = Runner(path)
+	runner = Runner(path, warner)
 	if program == None:
 		runner.run_file("maumivu.au")
 	else:
