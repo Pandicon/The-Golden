@@ -1,3 +1,4 @@
+from math import floor
 import sys
 from copy import deepcopy
 import os
@@ -239,6 +240,12 @@ class Runner:
 				if main_mem_ptr[main_act] < 0:
 					main_mem[main_act].insert(0, 0.0)
 					self.warner.warn("too-left-pointer")
+			if command == "^":
+				main_act = abs(main_act-1)
+			if command == "\\.":
+				print(main_mem[main_act][main_mem_ptr[main_act]])
+			if command == "\\,":
+				print(chr(floor(main_mem[main_act][main_mem_ptr[main_act]])))
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
