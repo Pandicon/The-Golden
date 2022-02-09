@@ -198,9 +198,25 @@ class Runner:
 		is_local = command.startswith("'")
 		if is_local:
 			command = command[1:]
-		print(command)
+		print(command, command.count("|"))
 		(main_mem, main_mem_ptr, main_act) = (local_memory, local_pointers_mem, local_active_mem) if is_local else (self.memory, self.pointers_mem, self.active_mem)
 		(loc_mem, loc_mem_ptr, loc_act) = (self.memory, self.pointers_mem, self.active_mem) if is_local else (local_memory, local_pointers_mem, local_active_mem)
+
+		repeat = 1
+		if command.count("|") == 2:
+			_, num, command = command.split("|")
+			if num == "":
+				num = main_mem[main_act][main_mem_ptr[main_act]]
+			num = int(num)
+			if num < 0:
+				num = abs(num)
+				command = self.opposite_commands[command]
+			repeat = num
+		for _ in range(0, repeat):
+			if command == "!":
+				main_mem[main_act][main_mem_ptr[main_act]] += 1
+			if command == "~":
+				main_mem[main_act][main_mem_ptr[main_act]] -= 1
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
