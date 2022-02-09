@@ -135,19 +135,25 @@ class Runner:
 	def __init__(self, root_path):
 		self.root_path = root_path
 		self.valid_commands = [
-			"'?\\[@",
-			"'?@\\]",
-			"'?\\[",
-			"'?\\]",
-			"'?\\$.",
-			"'?\\\\.",
-			"'?!",
-			":\r?\n?",
-			"\"[^\"]*\"",
-			"[ \t\f\v]",
-			":$",
-			"'?\$",
-			"'?\^"
+			"'?!", # increment
+			"'?~", # decrement
+			"'?\+", # add
+			"'?\-", # subtract
+			"'?\*", # multiply
+			"'?\/", # divide
+			"'?\^", # switch active memory
+			"'?\\[", # while start
+			"'?\\]", # while end
+			"'?\\[@", # do-while start
+			"'?@\\]", # do-while end
+			"'?\\$.", # input number
+			"'?\$\,", # input string
+			"'?\\\\.", # output number
+			"'?\\\\,", # output string
+			":\r?\n?", # end of line
+			":$", # end of line with any character after
+			"\"[^\"]*\"", # comments
+			"[ \t\f\v]" # whitespace
 		]
 		self.commands = []
 		self.commands_info = []
