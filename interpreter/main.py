@@ -157,7 +157,7 @@ class Runner:
 		}
 		self.commands = []
 		self.commands_info = []
-		self.brackets = []
+		self.brackets = {}
 		self.memory = [[0.0], [0.0]]
 		self.pointers_mem = [0, 0]
 		self.active_mem = 0
@@ -191,7 +191,10 @@ class Runner:
 		print(self.commands)
 		brackets_matcher = BracketsMatcher()
 		brackets_matcher.match(self.commands)
-		self.brackets = brackets_matcher.brackets
+		brackets_holder = brackets_matcher.brackets
+		for loop_type in brackets_holder:
+			for key in brackets_holder[loop_type]:
+				self.brackets[key] = brackets_holder[loop_type][key]
 		while self.program_pointer < len(self.commands):
 			command = self.commands[self.program_pointer]
 			(local_memory, local_pointers_mem, local_active_mem) = self.eval_command(command, local_memory, local_pointers_mem, local_active_mem)
@@ -204,7 +207,7 @@ class Runner:
 		is_local = command.startswith("'")
 		if is_local:
 			command = command[1:]
-		print(command, command.count("|"))
+		# print(command, command.count("|"))
 		(main_mem, main_mem_ptr, main_act) = (local_memory, local_pointers_mem, local_active_mem) if is_local else (self.memory, self.pointers_mem, self.active_mem)
 		(loc_mem, loc_mem_ptr, loc_act) = (self.memory, self.pointers_mem, self.active_mem) if is_local else (local_memory, local_pointers_mem, local_active_mem)
 
@@ -243,13 +246,39 @@ class Runner:
 			if command == "^":
 				main_act = abs(main_act-1)
 			if command == "\\.":
-				print(main_mem[main_act][main_mem_ptr[main_act]])
+				print(main_mem[main_act][main_mem_ptr[main_act]], end = '')
 			if command == "\\,":
-				print(chr(floor(main_mem[main_act][main_mem_ptr[main_act]])))
+				print(chr(floor(main_mem[main_act][main_mem_ptr[main_act]])), end = '')
 			if command == "$.":
 				main_mem[main_act][main_mem_ptr[main_act]] = float(input())
 			if command == "$,":
 				main_mem[main_act][main_mem_ptr[main_act]] = ord(input()[0])
+			if command == "[":
+				if main_mem[main_act][main_mem_ptr[main_act]] == 0:
+					if self.program_pointer in self.loops:
+						self.loops.remove(self.program_pointer)
+					self.program_pointer = self.brackets[self.program_pointer]
+				elif not self.program_pointer in self.loops:
+					self.loops.append(self.program_pointer)
+			if command == "]":
+				if main_mem[main_act][main_mem_ptr[main_act]] == 0:
+					if self.program_pointer in self.loops:
+						self.loops.remove(self.program_pointer)
+				else:
+					self.program_pointer = self.brackets[self.program_pointer]
+			if command == "[@":
+				if main_mem[main_act][main_mem_ptr[main_act]] == 0 and self.program_pointer in self.loops:
+					if self.program_pointer in self.loops:
+						self.loops.remove(self.program_pointer)
+					self.program_pointer = self.brackets[self.program_pointer]
+				elif not self.program_pointer in self.loops:
+					self.loops.append(self.program_pointer)
+			if command == "@]":
+				if main_mem[main_act][main_mem_ptr[main_act]] == 0:
+					if self.program_pointer in self.loops:
+						self.loops.remove(self.program_pointer)
+				else:
+					self.program_pointer = self.brackets[self.program_pointer]
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
