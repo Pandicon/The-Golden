@@ -147,13 +147,15 @@ class Runner:
 		self.opposite_commands = {
 			"!": "~",
 			"~": "!",
+			"+": "-",
+			"-": "+",
 			"*": "/",
 			"/": "*"
 		}
 		self.commands = []
 		self.commands_info = []
 		self.brackets = []
-		self.memory = [[0.0], [0.0]]
+		self.memory = [[2.0], [5.0]]
 		self.pointers_mem = [0, 0]
 		self.active_mem = 0
 		self.program_pointer = 0
@@ -217,6 +219,14 @@ class Runner:
 				main_mem[main_act][main_mem_ptr[main_act]] += 1
 			if command == "~":
 				main_mem[main_act][main_mem_ptr[main_act]] -= 1
+			if command == "+":
+				main_mem[main_act][main_mem_ptr[main_act]] += main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
+			if command == "-":
+				main_mem[main_act][main_mem_ptr[main_act]] -= main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
+			if command == "*":
+				main_mem[main_act][main_mem_ptr[main_act]] *= main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
+			if command == "/":
+				main_mem[main_act][main_mem_ptr[main_act]] /= main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
