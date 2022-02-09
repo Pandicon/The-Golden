@@ -144,9 +144,20 @@ class Runner:
 			"\"[^\"]*\"", # comments
 			"[ \t\f\v]" # whitespace
 		]
+		self.opposite_commands = {
+			"!": "~",
+			"~": "!",
+			"*": "/",
+			"/": "*"
+		}
 		self.commands = []
 		self.commands_info = []
 		self.brackets = []
+		self.memory = [[0.0], [0.0]]
+		self.pointers_mem = [0, 0]
+		self.active_mem = 0
+		self.program_pointer = 0
+		self.loops = []
 
 	def run_file(self, file_path):
 		file = open(os.path.join(path, file_path), "r")
@@ -158,6 +169,9 @@ class Runner:
 		self.run(program, "<input_main>")
 
 	def run(self, program, file):
+		local_memory = [[0.0], [0.0]]
+		local_pointers_mem = [0, 0]
+		local_active_mem = 0
 		print("Program:")
 		print(repr(program))
 		lexer = Lexer(program, self.valid_commands, file)
@@ -169,13 +183,30 @@ class Runner:
 		self.commands_info = parser.commands_info
 		print("Commands:")
 		print(self.commands)
-		print("Commands info:")
-		print(self.commands_info)
 		brackets_matcher = BracketsMatcher()
 		brackets_matcher.match(self.commands)
 		self.brackets = brackets_matcher.brackets
-		print("Brackets:")
-		print(self.brackets)
+		while self.program_pointer < len(self.commands):
+			command = self.commands[self.program_pointer]
+			(local_memory, local_pointers_mem, local_active_mem) = self.eval_command(command, local_memory, local_pointers_mem, local_active_mem)
+		print("Main memory:")
+		print(self.memory)
+		print("Local memory:")
+		print(local_memory)
+
+	def eval_command(self, command: str, local_memory, local_pointers_mem, local_active_mem):
+		is_local = command.startswith("'")
+		if is_local:
+			command = command[1:]
+		print(command)
+		(main_mem, main_mem_ptr, main_act) = (local_memory, local_pointers_mem, local_active_mem) if is_local else (self.memory, self.pointers_mem, self.active_mem)
+		(loc_mem, loc_mem_ptr, loc_act) = (self.memory, self.pointers_mem, self.active_mem) if is_local else (local_memory, local_pointers_mem, local_active_mem)
+
+		self.program_pointer += 1
+		self.memory = loc_mem if is_local else main_mem
+		self.pointers_mem = loc_mem_ptr if is_local else main_mem_ptr
+		self.active_mem = loc_act if is_local else main_act
+		return (main_mem, main_mem_ptr, main_act) if is_local else (loc_mem, loc_mem_ptr, loc_act)
 
 class Warner:
 	def __init__(self, flags):
