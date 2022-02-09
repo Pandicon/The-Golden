@@ -135,21 +135,30 @@ class Runner:
 	def __init__(self, root_path):
 		self.root_path = root_path
 		self.valid_commands = [
-			"'?!", # increment
-			"'?~", # decrement
-			"'?\+", # add
-			"'?\-", # subtract
-			"'?\*", # multiply
-			"'?\/", # divide
+			# (\|[0-9]*\|)? lets you do |x|<command>, which will execute the command x times (leaving it empty will execute it <active cell value>.floor() times)
+			"'?(\|[0-9]*\|)?!", # increment
+			"'?(\|[0-9]*\|)?~", # decrement
+			"'?(\|[0-9]*\|)?\+", # add
+			"'?(\|[0-9]*\|)?\-", # subtract
+			"'?(\|[0-9]*\|)?\*", # multiply
+			"'?(\|[0-9]*\|)?\/", # divide
+			"'?(\|[0-9]*\|)?\>", # move right
+			"'?(\|[0-9]*\|)?\<", # move left
+			"'?\_", # floor
+			"'?\&", # ceil
 			"'?\^", # switch active memory
-			"'?\\[", # while start
-			"'?\\]", # while end
 			"'?\\[@", # do-while start
 			"'?@\\]", # do-while end
+			"'?\\[", # while start
+			"'?\\]", # while end
 			"'?\\$.", # input number
 			"'?\$\,", # input string
 			"'?\\\\.", # output number
 			"'?\\\\,", # output string
+			"'?\?\=", # if the active memory cell = the not active memory cell, break
+			"'?\?\<", # if the active memory cell < the not active memory cell, break
+			"'?\?\>", # if the active memory cell > the not active memory cell, break
+			";", # switch value of the active local memory cell and global memory cell
 			":\r?\n?", # end of line
 			":$", # end of line with any character after
 			"\"[^\"]*\"", # comments
