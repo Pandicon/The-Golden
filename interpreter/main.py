@@ -7,26 +7,34 @@ class BracketsMatcher:
 	def __init__(self):
 		self.brackets = {
 			"while": {},
-			"do_while": {}
+			"do_while": {},
+			"while_local": {},
+			"do_while_local": {}
 		}
 		self.brackets_mem = []
 		self.bracket_keys = {
 			"[": "while",
 			"]": "while",
 			"[@": "do_while",
-			"@]": "do_while"
+			"@]": "do_while",
+			"'[": "while_local",
+			"']": "while_local",
+			"'[@": "do_while_local",
+			"'@]": "do_while_local"
 		}
 		self.ending_brackets_keys = {
 			"while": "]",
-			"do_while": "@]"
+			"do_while": "@]",
+			"while_local": "']",
+			"do_while_local": "'@]"
 		}
 
 	def match(self, code):
 		for i in range(len(code)):
 			char = code[i]
-			if not char in ["[", "]", "[@", "@]"]:
+			if not char in ["[", "]", "[@", "@]", "'[", "']", "'[@", "'@]"]:
 				continue
-			if char in ["[", "[@"]:
+			if char in ["[", "[@", "'[", "'[@"]:
 				self.brackets_mem.append([char, i, 0])
 			for key in range(len(self.brackets_mem)):
 				self.brackets_mem[key][2] += self.num_equals(self.brackets_mem[key][0], char)
@@ -127,19 +135,19 @@ class Runner:
 	def __init__(self, root_path):
 		self.root_path = root_path
 		self.valid_commands = [
-			"\\[@",
-			"@\\]",
-			"\\[",
-			"\\]",
-			"\\$.",
-			"\\\\.",
-			"!",
+			"'?\\[@",
+			"'?@\\]",
+			"'?\\[",
+			"'?\\]",
+			"'?\\$.",
+			"'?\\\\.",
+			"'?!",
 			":\r?\n?",
 			"\".*\"",
 			"[ \t\f\v]",
 			":$",
-			"\$",
-			"\^"
+			"'?\$",
+			"'?\^"
 		]
 		self.commands = []
 		self.commands_info = []
