@@ -246,6 +246,10 @@ class Runner:
 				print(main_mem[main_act][main_mem_ptr[main_act]])
 			if command == "\\,":
 				print(chr(floor(main_mem[main_act][main_mem_ptr[main_act]])))
+			if command == "$.":
+				main_mem[main_act][main_mem_ptr[main_act]] = float(input())
+			if command == "$,":
+				main_mem[main_act][main_mem_ptr[main_act]] = ord(input()[0])
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
