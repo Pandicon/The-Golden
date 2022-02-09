@@ -1,4 +1,5 @@
 from math import floor
+from random import random
 import sys
 from copy import deepcopy
 import os
@@ -123,6 +124,7 @@ class Runner:
 			"'?(\|[0-9]*\|)?\-", # subtract
 			"'?(\|[0-9]*\|)?\*", # multiply
 			"'?(\|[0-9]*\|)?\/", # divide
+			"'?`", # generate a random number from 0 (inclusive) to 1 (exclusive)
 			"'?(\|[0-9]*\|)?\>", # move right
 			"'?(\|[0-9]*\|)?\<", # move left
 			"'?\_", # floor
@@ -279,6 +281,8 @@ class Runner:
 						self.loops.remove(self.program_pointer)
 				else:
 					self.program_pointer = self.brackets[self.program_pointer]
+			if command == "`":
+				main_mem[main_act][main_mem_ptr[main_act]] = random()
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
