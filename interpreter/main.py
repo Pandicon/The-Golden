@@ -111,26 +111,6 @@ class Parser:
 			self.commands.append(t[0])
 			t = lex.next()
 
-class AUI:
-	def __init__(self):
-		self.linea = [0.0]
-		self.lineb = [0.0]
-		self.ptra = 0
-		self.ptrb = 0
-		self.ptr_mem = 0
-	def run(self, lex: Lexer):
-		p = None
-		t = lex.next()
-		while t:
-			if t[0] == "!":
-				self.linea[self.ptra] += 1
-			if t[0] == "^":
-				self.ptr_mem = abs(self.ptr_mem - 1)
-			p = t
-			t = lex.next()
-		if p[0] != ":" and p[0] != ":\n" and p[0] != ":\r\n":
-			raise_error(("Syntax error at %d:%d in %s - ':' expected" % (lex.line, lex.column, lex.file)), 1)
-
 class Runner:
 	def __init__(self, root_path):
 		self.root_path = root_path
