@@ -200,7 +200,7 @@ class Runner:
 		while self.program_pointer < len(self.commands):
 			command = self.commands[self.program_pointer]
 			(local_memory, local_pointers_mem, local_active_mem) = self.eval_command(command, local_memory, local_pointers_mem, local_active_mem)
-		print("Main memory:")
+		print("\nMain memory:")
 		print(self.memory)
 		print("Local memory:")
 		print(local_memory)
