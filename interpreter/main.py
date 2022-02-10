@@ -4,6 +4,7 @@ import sys
 from copy import deepcopy
 import os
 import re
+from time import sleep
 
 class BracketsMatcher:
 	def __init__(self):
@@ -96,16 +97,18 @@ class Validator:
 			raise_error(("Syntax error at %d:%d in %s - ':' expected" % (lex.line, lex.column, lex.file)), 1)
 
 class Parser:
-	def __init__(self):
+	def __init__(self, flags):
 		self.whiles = {}
 		self.do_whiles = {}
 		self.commands = []
 		self.commands_info = []
+		self.flags = flags
 
 	def run(self, lex: Lexer):
 		t = lex.next()
 		while t:
-			print(t)
+			if "--debug" in self.flags or "--debug-heavy" in self.flags:
+				print(t)
 			if '"' in t[0] or ":" in t[0]:
 				t = lex.next()
 				continue
@@ -114,19 +117,19 @@ class Parser:
 			t = lex.next()
 
 class Runner:
-	def __init__(self, root_path, warner):
+	def __init__(self, root_path, warner, flags):
 		self.root_path = root_path
 		self.valid_commands = [
-			# (\|[0-9]*\|)? lets you do |x|<command>, which will execute the command x times (leaving it empty will execute it <active cell value>.floor() times)
-			"'?(\|[0-9]*\|)?!", # increment
-			"'?(\|[0-9]*\|)?~", # decrement
-			"'?(\|[0-9]*\|)?\+", # add
-			"'?(\|[0-9]*\|)?\-", # subtract
-			"'?(\|[0-9]*\|)?\*", # multiply
-			"'?(\|[0-9]*\|)?\/", # divide
+			# (\|[0-9]*\|)* lets you do |x|<command>, which will execute the command x times (leaving it empty will execute it <active cell value>.floor() times)
+			"'?(\|[0-9]*\|)*!", # increment
+			"'?(\|[0-9]*\|)*~", # decrement
+			"'?(\|[0-9]*\|)*\+", # add
+			"'?(\|[0-9]*\|)*\-", # subtract
+			"'?(\|[0-9]*\|)*\*", # multiply
+			"'?(\|[0-9]*\|)*\/", # divide
 			"'?`", # generate a random number from 0 (inclusive) to 1 (exclusive)
-			"'?(\|[0-9]*\|)?\>", # move right
-			"'?(\|[0-9]*\|)?\<", # move left
+			"'?(\|[0-9]*\|)*\>", # move right
+			"'?(\|[0-9]*\|)*\<", # move left
 			"'?\_", # floor
 			"'?\&", # ceil
 			"'?\^", # switch active memory
@@ -138,9 +141,9 @@ class Runner:
 			"'?\$\,", # input string
 			"'?\\\\.", # output number
 			"'?\\\\,", # output string
-			"'?(\|[0-9]*\|)?\?\=", # if the active memory cell = the not active memory cell, break
-			"'?(\|[0-9]*\|)?\?\<", # if the active memory cell < the not active memory cell, break
-			"'?(\|[0-9]*\|)?\?\>", # if the active memory cell > the not active memory cell, break
+			"'?(\|[0-9]*\|)*\?\=", # if the active memory cell = the not active memory cell, break
+			"'?(\|[0-9]*\|)*\?\<", # if the active memory cell < the not active memory cell, break
+			"'?(\|[0-9]*\|)*\?\>", # if the active memory cell > the not active memory cell, break
 			";", # switch value of the active local memory cell and global memory cell
 			":\r?\n?", # end of line
 			":$", # end of line with any character after
@@ -166,6 +169,7 @@ class Runner:
 		self.program_pointer = 0
 		self.loops = []
 		self.warner = warner
+		self.flags = flags
 
 	def run_file(self, file_path):
 		file = open(os.path.join(path, file_path), "r")
@@ -180,17 +184,18 @@ class Runner:
 		local_memory = [[0.0], [0.0]]
 		local_pointers_mem = [0, 0]
 		local_active_mem = 0
-		print("Program:")
-		print(repr(program))
 		lexer = Lexer(program, self.valid_commands, file)
 		validator = Validator()
 		validator.run(deepcopy(lexer))
-		parser = Parser()
+		parser = Parser(self.flags)
 		parser.run(deepcopy(lexer))
 		self.commands = parser.commands
 		self.commands_info = parser.commands_info
-		print("Commands:")
-		print(self.commands)
+		if "--debug" in self.flags or "--debug-heavy" in self.flags:
+			print("Program:")
+			print(repr(program))
+			print("Commands:")
+			print(self.commands)
 		brackets_matcher = BracketsMatcher()
 		brackets_matcher.match(self.commands)
 		brackets_holder = brackets_matcher.brackets
@@ -200,10 +205,11 @@ class Runner:
 		while self.program_pointer < len(self.commands):
 			command = self.commands[self.program_pointer]
 			(local_memory, local_pointers_mem, local_active_mem) = self.eval_command(command, local_memory, local_pointers_mem, local_active_mem)
-		print("\nMain memory:")
-		print(self.memory)
-		print("Local memory:")
-		print(local_memory)
+		if "--debug" in self.flags or "--debug-heavy" in self.flags:
+			print("\nMain memory:")
+			print(self.memory)
+			print("Local memory:")
+			print(local_memory)
 
 	def eval_command(self, command: str, local_memory, local_pointers_mem, local_active_mem):
 		is_local = command.startswith("'")
@@ -297,6 +303,12 @@ class Runner:
 		self.memory = loc_mem if is_local else main_mem
 		self.pointers_mem = loc_mem_ptr if is_local else main_mem_ptr
 		self.active_mem = loc_act if is_local else main_act
+		if "--debug-heavy" in self.flags:
+			print(command)
+			print(self.memory)
+			print(self.pointers_mem)
+			print(self.active_mem)
+			sleep(0.5)
 		return (main_mem, main_mem_ptr, main_act) if is_local else (loc_mem, loc_mem_ptr, loc_act)
 
 class Warner:
@@ -330,6 +342,7 @@ if __name__ == "__main__":
 	flags = []
 	possible_flags = [
 		"--debug",
+		"--debug-heavy",
 		"-",
 		"--disable-warnings",
 		"--disable-path-warning",
@@ -355,7 +368,7 @@ if __name__ == "__main__":
 	if path == None:
 		warner.warn("path")
 
-	runner = Runner(path, warner)
+	runner = Runner(path, warner, flags)
 	if program == None:
 		runner.run_file("maumivu.au")
 	else:
