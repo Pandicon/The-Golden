@@ -138,9 +138,9 @@ class Runner:
 			"'?\$\,", # input string
 			"'?\\\\.", # output number
 			"'?\\\\,", # output string
-			"'?\?\=", # if the active memory cell = the not active memory cell, break
-			"'?\?\<", # if the active memory cell < the not active memory cell, break
-			"'?\?\>", # if the active memory cell > the not active memory cell, break
+			"'?(\|[0-9]*\|)?\?\=", # if the active memory cell = the not active memory cell, break
+			"'?(\|[0-9]*\|)?\?\<", # if the active memory cell < the not active memory cell, break
+			"'?(\|[0-9]*\|)?\?\>", # if the active memory cell > the not active memory cell, break
 			";", # switch value of the active local memory cell and global memory cell
 			":\r?\n?", # end of line
 			":$", # end of line with any character after
@@ -283,6 +283,15 @@ class Runner:
 					self.program_pointer = self.brackets[self.program_pointer]
 			if command == "`":
 				main_mem[main_act][main_mem_ptr[main_act]] = random()
+			if command == "?=":
+				if main_mem[main_act][main_mem_ptr[main_act]] == main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]:
+					self.program_pointer = self.brackets[self.loops.pop()]
+			if command == "?>":
+				if main_mem[main_act][main_mem_ptr[main_act]] > main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]:
+					self.program_pointer = self.brackets[self.loops.pop()]
+			if command == "?<":
+				if main_mem[main_act][main_mem_ptr[main_act]] < main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]:
+					self.program_pointer = self.brackets[self.loops.pop()]
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
