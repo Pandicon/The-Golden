@@ -107,7 +107,7 @@ class Parser:
 	def run(self, lex: Lexer):
 		t = lex.next()
 		while t:
-			if "--debug" in self.flags or "--debug-heavy" in self.flags:
+			if "--debug" in self.flags:
 				print(t)
 			if '"' in t[0] or ":" in t[0]:
 				t = lex.next()
@@ -191,7 +191,7 @@ class Runner:
 		parser.run(deepcopy(lexer))
 		self.commands = parser.commands
 		self.commands_info = parser.commands_info
-		if "--debug" in self.flags or "--debug-heavy" in self.flags:
+		if "--debug" in self.flags:
 			print("Program:")
 			print(repr(program))
 			print("Commands:")
@@ -205,7 +205,7 @@ class Runner:
 		while self.program_pointer < len(self.commands):
 			command = self.commands[self.program_pointer]
 			(local_memory, local_pointers_mem, local_active_mem) = self.eval_command(command, local_memory, local_pointers_mem, local_active_mem)
-		if "--debug" in self.flags or "--debug-heavy" in self.flags:
+		if "--debug" in self.flags:
 			print("\nMain memory:")
 			print(self.memory)
 			print("Local memory:")
@@ -357,7 +357,9 @@ if __name__ == "__main__":
 			program = args[i+1]
 			flags.append("-")
 			continue
-		if arg in possible_flags:
+		if arg == "--debug-heavy" and not "--debug" in flags:
+			flags.append("--debug")
+		if arg in possible_flags and not arg in flags:
 			flags.append(arg)
 	if not "-" in flags:
 		path: str = input("Input the complete path to your maumivu.au file: ") if args_amount < 2 else args[1]
