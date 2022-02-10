@@ -100,6 +100,7 @@ The magic of Brainfuck-like syntax is that it is easy and extremely difficult at
 | ] | End a while loop | `]` | No | Yes |
 | [@ | Start a do-while loop | `[@` | No | Yes |
 | @] | End a do-while loop | `@]` | No | Yes |
+| ?? | Sets the cell value to its index | `??` | No | Yes |
 | ?= | If the cells in the active and inactive rows have the same value, break the loop | `[?=]` | Yes | Yes |
 | ?< | If the cell in the active row has a lower value than the cell in the inactive row, break the loop | `[?<]` | Yes | Yes |
 | ?> | If the cell in the active row has a higher value than the cell in the inactive row, break the loop | `[?>]` | Yes | Yes |
