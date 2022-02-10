@@ -112,6 +112,7 @@ Each line has to end with a punctuation (`:`) or else the program will crash.
 
 -   Functions
 -   Running other files
+-   A compiled interpreter
 
 ## Examples <a name="examples"></a>
 
