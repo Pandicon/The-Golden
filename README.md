@@ -84,9 +84,9 @@ The magic of Brainfuck-like syntax is that it is easy and extremely difficult at
 | ~ | Subtracts one from the current cell | `~` | Yes | Yes |
 | + | Adds the cell in the inactive row to the cell in the active row | `+` | Yes | Yes |
 | - | Subtracts the cell in the inactive row from the cell in the active row | `-` | Yes | Yes |
-| * | Multiplies the cell in the inactive row with the cell in the active row | `_`| Yes | Yes |
+| * | Multiplies the cell in the inactive row with the cell in the active row | `*`| Yes | Yes |
 | / | Divides the cell in the active row with the cell in the inactive row |`/`| Yes | Yes |
-| _ | Floors the current cell value (towards -infinity) |`\_`| No | Yes |
+| _ | Floors the current cell value (towards -infinity) |`_`| No | Yes |
 | & | Ceils the current cell value (towards +infinity) |`&`| No | Yes |
 | ` | Sets the cell to a random number from 0 (inclusive) to 1 (exclusive) | <code>`</code> | No | Yes |
 | > | Move the cell pointer one to the right | `>`| Yes | Yes |
