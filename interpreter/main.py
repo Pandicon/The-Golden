@@ -1,4 +1,4 @@
-from math import floor
+from math import ceil, floor
 from random import random
 import sys
 from copy import deepcopy
@@ -242,6 +242,10 @@ class Runner:
 				main_mem[main_act][main_mem_ptr[main_act]] *= main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
 			if command == "/":
 				main_mem[main_act][main_mem_ptr[main_act]] /= main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]
+			if command == "_":
+				main_mem[main_act][main_mem_ptr[main_act]] = floor(main_mem[main_act][main_mem_ptr[main_act]])
+			if command == "&":
+				main_mem[main_act][main_mem_ptr[main_act]] = ceil(main_mem[main_act][main_mem_ptr[main_act]])
 			if command == ">":
 				main_mem_ptr[main_act] += 1
 				if main_mem_ptr[main_act] >= len(main_mem[main_act]):
@@ -304,9 +308,13 @@ class Runner:
 		self.pointers_mem = loc_mem_ptr if is_local else main_mem_ptr
 		self.active_mem = loc_act if is_local else main_act
 		if "--debug-heavy" in self.flags:
+			print("Command:")
 			print(command)
+			print("Global memory:")
 			print(self.memory)
+			print("Global memory pointers:")
 			print(self.pointers_mem)
+			print("Active global memory:")
 			print(self.active_mem)
 			sleep(0.5)
 		return (main_mem, main_mem_ptr, main_act) if is_local else (loc_mem, loc_mem_ptr, loc_act)
