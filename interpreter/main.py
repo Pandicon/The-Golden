@@ -141,6 +141,7 @@ class Runner:
 			"'?\$\,", # input string
 			"'?\\\\.", # output number
 			"'?\\\\,", # output string
+			"'?(\|[0-9]*\|)*\?\?", # set the cell to its index
 			"'?(\|[0-9]*\|)*\?\=", # if the active memory cell = the not active memory cell, break
 			"'?(\|[0-9]*\|)*\?\<", # if the active memory cell < the not active memory cell, break
 			"'?(\|[0-9]*\|)*\?\>", # if the active memory cell > the not active memory cell, break
@@ -302,6 +303,8 @@ class Runner:
 			if command == "?<":
 				if main_mem[main_act][main_mem_ptr[main_act]] < main_mem[abs(main_act-1)][main_mem_ptr[abs(main_act-1)]]:
 					self.program_pointer = self.brackets[self.loops.pop()]
+			if command == "??":
+				main_mem[main_act][main_mem_ptr[main_act]] = main_mem_ptr[main_act]
 
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
