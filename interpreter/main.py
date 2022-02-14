@@ -305,7 +305,10 @@ class Runner:
 					self.program_pointer = self.brackets[self.loops.pop()]
 			if command == "??":
 				main_mem[main_act][main_mem_ptr[main_act]] = main_mem_ptr[main_act]
-
+			if command == ";":
+				holder = loc_mem[loc_act][loc_mem_ptr[loc_act]]
+				loc_mem[loc_act][loc_mem_ptr[loc_act]] = main_mem[main_act][main_mem_ptr[main_act]]
+				main_mem[main_act][main_mem_ptr[main_act]] = holder	
 		self.program_pointer += 1
 		self.memory = loc_mem if is_local else main_mem
 		self.pointers_mem = loc_mem_ptr if is_local else main_mem_ptr
