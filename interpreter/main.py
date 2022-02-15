@@ -173,7 +173,7 @@ class Runner:
 		self.flags = flags
 
 	def run_file(self, file_path):
-		file = open(os.path.join(path, file_path), "r")
+		file = open(os.path.join(self.root_path, file_path), "r")
 		program = file.read()
 		file.close()
 		self.run(program, file_path)
