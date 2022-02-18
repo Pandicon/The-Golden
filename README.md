@@ -15,7 +15,7 @@
 
 ## Basic info <a name="basic-info"></a>
 
-This language is an extension of a faily popular language called Brainfuck. It takes the beauty of not using any letters in the code from it but also provides some handy features, like printing output as numbers instead of characters and more.
+This language is a fairly good language inspired by a faily popular language called Brainfuck. It takes the beauty of not using any letters in the code from it but also provides some handy features, like printing output as numbers instead of characters and more.
 <br>Its purpose is to let people make Brainfuck-styled programs less painfully.
 
 ## How to run your code <a name="run-code"></a>
