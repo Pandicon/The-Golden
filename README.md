@@ -84,8 +84,8 @@ The magic of Brainfuck-like syntax is that it is easy and extremely difficult at
 | ~ | Subtracts one from the current cell | `~` | Yes | Yes |
 | + | Adds the cell in the inactive row to the cell in the active row | `+` | Yes | Yes |
 | - | Subtracts the cell in the inactive row from the cell in the active row | `-` | Yes | Yes |
-| * | Multiplies the cell in the inactive row with the cell in the active row | `*`| Yes | Yes |
-| / | Divides the cell in the active row with the cell in the inactive row |`/`| Yes | Yes |
+| * | Multiplies the cell in the active row by the cell in the inactive row | `*`| Yes | Yes |
+| / | Divides the cell in the active row by the cell in the inactive row |`/`| Yes | Yes |
 | _ | Floors the current cell value (towards -infinity) |`_`| No | Yes |
 | & | Ceils the current cell value (towards +infinity) |`&`| No | Yes |
 | ` | Sets the cell to a random number from 0 (inclusive) to 1 (exclusive) | <code>`</code> | No | Yes |
@@ -104,7 +104,7 @@ The magic of Brainfuck-like syntax is that it is easy and extremely difficult at
 | ?= | If the cells in the active and inactive rows have the same value, break the loop | `[?=]` | Yes | Yes |
 | ?< | If the cell in the active row has a lower value than the cell in the inactive row, break the loop | `[?<]` | Yes | Yes |
 | ?> | If the cell in the active row has a higher value than the cell in the inactive row, break the loop | `[?>]` | Yes | Yes |
-| ; | Switch the values of the active global cell and the active local cell | `;` | No | No |
+| ; | Switch the values of the active global cell and the active local cell | `;` | No | Yes |
 | "" | Comments | `"This is a comment"` | No | No |
 
 Each line has to end with a punctuation (`:`) or else the program will crash.
