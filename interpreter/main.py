@@ -265,7 +265,7 @@ class Runner:
 			if command == "$.":
 				main_mem[main_act][main_mem_ptr[main_act]] = float(input())
 			if command == "$,":
-				main_mem[main_act][main_mem_ptr[main_act]] = ord(input()[0])
+				main_mem[main_act][main_mem_ptr[main_act]] = ord(sys.stdin.read(1))
 			if command == "[":
 				if main_mem[main_act][main_mem_ptr[main_act]] == 0:
 					if self.program_pointer in self.loops:
