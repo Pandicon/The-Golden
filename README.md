@@ -15,6 +15,7 @@
 
 ## Basic info <a name="basic-info"></a>
 
+The language is currently in development and there is no stable release yet. There may be a lot of breaking changes introduced in updates.<br>
 This language is a fairly good language inspired by a faily popular language called Brainfuck. It takes the beauty of not using any letters in the code from it but also provides some handy features, like printing output as numbers instead of characters and more.
 <br>Its purpose is to let people make Brainfuck-styled programs less painfully.
 
