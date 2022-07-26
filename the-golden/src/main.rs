@@ -1,7 +1,28 @@
+use dotenv::dotenv;
+use std::env;
+
 #[path = "./interpreter/interpreter.rs"] mod interpreter;
 use interpreter::Interpreter;
 
 fn main() {
+	dotenv().ok();
+	if env::var("RUST_LOG").is_err() {
+		env::set_var("RUST_LOG", "INFO");
+	}
+	match env::var("LOGS") {
+		Ok(val) => {
+			if val.to_lowercase() != "on" && cfg!(target_os = "windows") {
+				winconsole::window::hide();
+			}
+		}
+		Err(_) => {
+			if cfg!(target_os = "windows") {
+				winconsole::window::hide();
+			}
+		}
+	}
+	tracing_subscriber::fmt::init();
+
 	let args: Vec<String> = std::env::args().collect();
 	let actions = [String::from("run")];
 	let mut action = String::new();
@@ -19,12 +40,12 @@ fn main() {
 		if args.len() > 2 {
 			path.push(args[2].clone());
 		}
-		path.push("maumivu.au");
-		let code = match std::fs::read_to_string(path) {
+		path.set_file_name("maumivu.au");
+		let code = match std::fs::read_to_string(&path) {
 			Ok(c) => c,
 			Err(e) => panic!("{}", e)
 		};
-		Interpreter::new(version, code).run();
+		Interpreter::new(version, code, path).run();
 	} else {
 		todo!()
 	}

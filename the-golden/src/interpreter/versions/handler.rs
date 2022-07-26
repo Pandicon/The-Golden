@@ -17,9 +17,9 @@ impl Handler {
 		version
 	}
 
-	pub fn run(&self, version: String, code: String) {
+	pub fn run(&self, version: String, code: String, code_path: std::path::PathBuf) {
 		match version.as_str() {
-			"0.1.0" => v0_1_0::Runner::new(code).run(),
+			"0.1.0" => v0_1_0::Runner::new(code, code_path).run(),
 			_ => panic!("Couldn't launch version {}", &version)
 		}
 	}

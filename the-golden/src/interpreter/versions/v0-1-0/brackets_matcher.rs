@@ -47,6 +47,6 @@ impl BracketsMatcher {
 		if left == right {
 			return 1;
 		}
-		return -1;
+		-1
 	}
 }
