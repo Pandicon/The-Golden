@@ -10,14 +10,13 @@ impl Validator {
 			p = t;
 			t = lexer.next();
 		}
-		match t {
-			Err(e) => return Err(e),
-			_ => {}
+		if let Err(e) = t {
+			return Err(e);
 		}
 		let (command, line, column, file_path) = p.unwrap().unwrap();
 		if !Regex::new(r":\n?\r?").unwrap().is_match(&command) {
 			return Err(format!("Syntax error at {}:{} in {:?} ({:?}) - ':' expected", line, column, file_path.file_name().unwrap(), file_path.as_path()));
 		}
-		return Ok(0);
+		Ok(0)
 	}
 }

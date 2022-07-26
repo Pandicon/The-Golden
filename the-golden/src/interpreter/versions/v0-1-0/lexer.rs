@@ -6,6 +6,7 @@ lazy_static! {
     static ref NEW_LINE_REGEX: Regex = Regex::new(r"^\r?\n").unwrap();
 }
 
+#[derive(Clone)]
 pub struct Lexer {
 	text: String,
 	rules: Vec<Regex>,
@@ -23,7 +24,7 @@ impl Lexer {
 
 	pub fn next(&mut self) -> Result<Option<(String, usize, usize, std::path::PathBuf)>, String> {
 		let text = &self.text.as_str()[self.position..];
-		if text.len() < 1 {
+		if text.is_empty() {
 			return Ok(None);
 		}
 		if text == "\"" {
@@ -35,16 +36,17 @@ impl Lexer {
 		for rule in &self.rules {
 			if let Some(captures) = rule.captures(text) {
 				if let Some(capture) = captures.get(0) {
+					let (command_line, command_column) = (self.line, self.column);
 					let command = capture.as_str();
 					let command_length = capture.end() - capture.start();
 					self.position += command_length;
-					if command.contains("\n") {
-						self.line += command.matches("\n").count();
-						self.column += command.split("\n").last().unwrap().len();
+					if command.contains('\n') {
+						self.line += command.matches('\n').count();
+						self.column += command.split('\n').last().unwrap().len();
 					} else {
 						self.column += command_length;
 					}
-					return Ok(Some((command.to_string(), self.line, self.column, self.file_path.clone())));
+					return Ok(Some((command.to_string(), command_line, command_column, self.file_path.clone())));
 				}
 			}
 		}
