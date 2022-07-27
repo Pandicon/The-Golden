@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use regex::Regex;
 
 #[path = "./brackets_matcher.rs"] mod brackets_matcher;
@@ -14,7 +16,9 @@ pub struct Runner {
 	
 	raw_code: String,
 	rules: Vec<Regex>,
-	code_path: std::path::PathBuf
+	code_path: std::path::PathBuf,
+
+	brackets: HashMap<String, HashMap<usize, usize>>
 }
 
 impl Runner {
@@ -28,9 +32,12 @@ impl Runner {
 		];
 		Self {
 			brackets_matcher: BracketsMatcher::new(),
+
 			raw_code,
 			rules,
-			code_path
+			code_path,
+
+			brackets: HashMap::new()
 		}
 	}
 
@@ -51,6 +58,7 @@ impl Runner {
 			return;
 		}
 		self.brackets_matcher.match_brackets(&parser.commands);
+		self.brackets = self.brackets_matcher.brackets.clone();
 		println!("{:?}", self.brackets_matcher.brackets);
 	}
 }

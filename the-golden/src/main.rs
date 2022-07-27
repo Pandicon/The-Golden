@@ -1,6 +1,8 @@
 use dotenv::dotenv;
 use std::env;
 
+#[path = "./flags.rs"] mod flags;
+pub use flags::Flags;
 #[path = "./interpreter/interpreter.rs"] mod interpreter;
 use interpreter::Interpreter;
 
@@ -24,28 +26,34 @@ fn main() {
 	tracing_subscriber::fmt::init();
 
 	let args: Vec<String> = std::env::args().collect();
-	let actions = [String::from("run")];
+
+	let mut flags_handler = Flags::new();
+	flags_handler.parse(&args);
+	println!("{:?}", flags_handler);
+
 	let mut action = String::new();
 	let mut version = String::from("latest");
-	for arg in &args {
-		if arg.starts_with("--version:") {
-			version = arg.split_once("--version:").unwrap().1.to_string();
-		} else if actions.contains(&arg.to_lowercase()) {
-			action = arg.to_lowercase();
-		}
+	let mut code = String::new();
+	let mut code_path = std::path::PathBuf::new();
+
+	if let Some(a) = flags_handler.action {
+		action = a;
 	}
-	if action == *"run" {
-		let mut path = std::path::PathBuf::from(args[0].clone());
-		path.pop();
-		if args.len() > 2 {
-			path.push(args[2].clone());
-		}
-		path.set_file_name("maumivu.au");
-		let code = match std::fs::read_to_string(&path) {
+	if let Some(path) = flags_handler.code_path {
+		code = match std::fs::read_to_string(&path) {
 			Ok(c) => c,
 			Err(e) => panic!("{}", e)
 		};
-		Interpreter::new(version, code, path).run();
+		code_path = path;
+	} else if let Some(code_to_run) = flags_handler.raw_code_to_run {
+		code = code_to_run;
+		code_path.set_file_name("<console_input_main>");
+	}
+	if let Some(v) = flags_handler.version {
+		version = v;
+	}
+	if action == *"run" {
+		Interpreter::new(version, code, code_path).run();
 	} else {
 		todo!()
 	}
