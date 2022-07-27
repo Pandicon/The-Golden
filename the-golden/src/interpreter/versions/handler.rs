@@ -1,3 +1,5 @@
+use crate::Flags;
+
 #[path = "./v0-1-0/main.rs"] mod v0_1_0;
 
 pub struct Handler {
@@ -17,9 +19,9 @@ impl Handler {
 		version
 	}
 
-	pub fn run(&self, version: String, code: String, code_path: std::path::PathBuf) {
+	pub fn run(&self, version: String, code: String, code_path: std::path::PathBuf, flags: Flags) {
 		match version.as_str() {
-			"0.1.0" => v0_1_0::Runner::new(code, code_path).run(),
+			"0.1.0" => v0_1_0::Runner::new(code, code_path, flags).run(),
 			_ => panic!("Couldn't launch version {}", &version)
 		}
 	}

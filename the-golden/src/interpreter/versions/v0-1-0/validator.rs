@@ -3,12 +3,18 @@ use regex::Regex;
 pub struct Validator {}
 
 impl Validator {
-	pub fn run(mut lexer: super::Lexer) -> Result<u8, String> {
+	pub fn run(mut lexer: super::Lexer, heavy_debug: bool) -> Result<u8, String> {
 		let mut t = lexer.next();
+		if heavy_debug {
+			println!("Matched command: {:?}", t);
+		}
 		let mut p = t.clone();
 		while t.is_ok() && t.clone().unwrap().is_some() {
 			p = t;
 			t = lexer.next();
+			if heavy_debug {
+				println!("Matched command: {:?}", t);
+			}
 		}
 		if let Err(e) = t {
 			return Err(e);

@@ -29,31 +29,31 @@ fn main() {
 
 	let mut flags_handler = Flags::new();
 	flags_handler.parse(&args);
-	println!("{:?}", flags_handler);
 
 	let mut action = String::new();
 	let mut version = String::from("latest");
 	let mut code = String::new();
 	let mut code_path = std::path::PathBuf::new();
 
-	if let Some(a) = flags_handler.action {
+	let cloned_flags = flags_handler.clone();
+	if let Some(a) = cloned_flags.action {
 		action = a;
 	}
-	if let Some(path) = flags_handler.code_path {
+	if let Some(path) = cloned_flags.code_path {
 		code = match std::fs::read_to_string(&path) {
 			Ok(c) => c,
 			Err(e) => panic!("{}", e)
 		};
 		code_path = path;
-	} else if let Some(code_to_run) = flags_handler.raw_code_to_run {
+	} else if let Some(code_to_run) = cloned_flags.raw_code_to_run {
 		code = code_to_run;
 		code_path.set_file_name("<console_input_main>");
 	}
-	if let Some(v) = flags_handler.version {
+	if let Some(v) = cloned_flags.version {
 		version = v;
 	}
 	if action == *"run" {
-		Interpreter::new(version, code, code_path).run();
+		Interpreter::new(version, code, code_path, flags_handler).run();
 	} else {
 		todo!()
 	}

@@ -1,9 +1,9 @@
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Flags {
 	pub action: Option<String>,
 	pub code_path: Option<std::path::PathBuf>,
-	pub debug: Option<bool>,
-	pub debug_heavy: Option<bool>,
+	pub debug: bool,
+	pub debug_heavy: bool,
 	pub raw_code_to_run: Option<String>,
 	pub version: Option<String>
 }
@@ -13,8 +13,8 @@ impl Flags {
 		Self {
 			action: None,
 			code_path: None,
-			debug: None,
-			debug_heavy: None,
+			debug: false,
+			debug_heavy: false,
 			raw_code_to_run: None,
 			version: None
 		}
@@ -27,11 +27,10 @@ impl Flags {
 			let argument = &args[i];
 			let argument_lowercase = argument.to_lowercase();
 			match argument_lowercase.as_str() {
-				"--debug" => if self.debug.is_none() {
-					self.debug = Some(true);
-				},
-				"--debug-heavy" => if self.debug_heavy.is_none() {
-					self.debug_heavy = Some(true);
+				"--debug" => self.debug = true,
+				"--debug-heavy" => {
+					self.debug = true;
+					self.debug_heavy = true;
 				},
 				"--version" => if self.version.is_none() && i + 1 < args_count {
 					self.version = Some(args[i+1].clone());
