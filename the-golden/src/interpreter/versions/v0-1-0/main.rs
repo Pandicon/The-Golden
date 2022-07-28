@@ -122,12 +122,12 @@ impl Runner {
 		}
 	}
 
-	pub fn evaluate_command(&mut self, command: &String, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> usize {
+	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> usize {
 		let is_local = command.starts_with('\'');
 		let command = if is_local {
 			&command[1..]
 		} else {
-			command.as_str()
+			command
 		};
 		let [(main_memory, main_memory_pointers, main_active_memory), (local_memory, local_memory_pointers, active_local_memory)] = if is_local {
 			[(local_memory, local_memory_pointers, active_local_memory), (&mut self.memory, &mut self.memory_pointers, self.active_memory)]
@@ -147,7 +147,7 @@ impl Runner {
 		} else {
 			main_active_memory
 		};
-		return if is_local {
+		if is_local {
 			main_active_memory
 		} else {
 			active_local_memory
