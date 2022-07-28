@@ -3,14 +3,18 @@ use std::collections::HashMap;
 use crate::Flags;
 use regex::Regex;
 
-#[path = "./brackets_matcher.rs"] mod brackets_matcher;
+#[path = "./brackets_matcher.rs"]
+mod brackets_matcher;
 use brackets_matcher::BracketsMatcher;
-#[path = "./lexer.rs"] mod lexer;
+#[path = "./lexer.rs"]
+mod lexer;
 pub use lexer::Lexer;
-#[path = "./parser.rs"] mod parser;
-pub use parser::Parser;
+#[path = "./parser.rs"]
+mod parser;
 use crate::Utils;
-#[path = "./validator.rs"] mod validator;
+pub use parser::Parser;
+#[path = "./validator.rs"]
+mod validator;
 use validator::Validator;
 
 const INFO_PREFIX_LENGTH: usize = 12;
@@ -20,7 +24,7 @@ pub struct Runner {
 
 	brackets_matcher: BracketsMatcher,
 	brackets_categorised: HashMap<String, HashMap<usize, usize>>,
-	
+
 	brackets: HashMap<usize, usize>,
 	raw_code: String,
 	rules: Vec<Regex>,
@@ -31,7 +35,7 @@ pub struct Runner {
 	loops: Vec<usize>,
 	memory: [Vec<f64>; 2],
 	memory_pointers: [usize; 2],
-	active_memory: usize
+	active_memory: usize,
 }
 
 impl Runner {
@@ -41,7 +45,7 @@ impl Runner {
 			Regex::new(r"^'?\[@?").unwrap(),
 			Regex::new(r"^'?@?\]").unwrap(),
 			Regex::new(r"^:\r?\n?").unwrap(),
-			Regex::new("\"[^\"]*\"").unwrap()
+			Regex::new("\"[^\"]*\"").unwrap(),
 		];
 		Self {
 			flags,
@@ -59,7 +63,7 @@ impl Runner {
 			loops: vec![],
 			memory: [vec![0.0], vec![0.0]],
 			memory_pointers: [0, 0],
-			active_memory: 0
+			active_memory: 0,
 		}
 	}
 
@@ -89,7 +93,11 @@ impl Runner {
 		self.brackets_matcher.match_brackets(&parser.commands);
 		self.brackets_categorised = self.brackets_matcher.brackets.clone();
 		if self.flags.debug_heavy {
-			println!("{}Matched brackets: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.brackets_matcher.brackets);
+			println!(
+				"{}Matched brackets: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH),
+				self.brackets_matcher.brackets
+			);
 		}
 		for loop_type in self.brackets_categorised.keys() {
 			let map = self.brackets_categorised.get(loop_type).unwrap();
@@ -98,7 +106,11 @@ impl Runner {
 			}
 		}
 		if self.flags.debug_heavy {
-			println!("{}Matched brackets uncategorised: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.brackets);
+			println!(
+				"{}Matched brackets uncategorised: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH),
+				self.brackets
+			);
 		}
 		if self.flags.debug {
 			println!("{}----- START OF CODE EXECUTION -----", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
@@ -124,29 +136,33 @@ impl Runner {
 
 	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> usize {
 		let is_local = command.starts_with('\'');
-		let command = if is_local {
-			&command[1..]
-		} else {
-			command
-		};
+		let command = if is_local { &command[1..] } else { command };
 		let [(main_memory, main_memory_pointers, main_active_memory), (local_memory, local_memory_pointers, active_local_memory)] = if is_local {
-			[(local_memory, local_memory_pointers, active_local_memory), (&mut self.memory, &mut self.memory_pointers, self.active_memory)]
+			[
+				(local_memory, local_memory_pointers, active_local_memory),
+				(&mut self.memory, &mut self.memory_pointers, self.active_memory),
+			]
 		} else {
-			[(&mut self.memory, &mut self.memory_pointers, self.active_memory), (local_memory, local_memory_pointers, active_local_memory)]
+			[
+				(&mut self.memory, &mut self.memory_pointers, self.active_memory),
+				(local_memory, local_memory_pointers, active_local_memory),
+			]
 		};
 		match command {
 			"!" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] += 1.0,
 			"~" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -= 1.0,
-			"+" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] += main_memory[(main_active_memory as isize-1).abs() as usize][main_memory_pointers[(main_active_memory as isize-1).abs() as usize]],
-			"-" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -= main_memory[(main_active_memory as isize-1).abs() as usize][main_memory_pointers[(main_active_memory as isize-1).abs() as usize]],
+			"+" => {
+				main_memory[main_active_memory][main_memory_pointers[main_active_memory]] +=
+					main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+			}
+			"-" => {
+				main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -=
+					main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+			}
 			_ => {}
 		}
 		self.program_pointer += 1;
-		self.active_memory = if is_local {
-			active_local_memory
-		} else {
-			main_active_memory
-		};
+		self.active_memory = if is_local { active_local_memory } else { main_active_memory };
 		if is_local {
 			main_active_memory
 		} else {
