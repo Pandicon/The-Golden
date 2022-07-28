@@ -5,6 +5,8 @@ use std::env;
 pub use flags::Flags;
 #[path = "./interpreter/interpreter.rs"] mod interpreter;
 use interpreter::Interpreter;
+#[path = "./utils.rs"] mod utils;
+pub use utils::Utils;
 
 fn main() {
 	dotenv().ok();
