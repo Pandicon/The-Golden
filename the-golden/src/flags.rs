@@ -4,6 +4,7 @@ pub struct Flags {
 	pub code_path: Option<std::path::PathBuf>,
 	pub debug: bool,
 	pub debug_heavy: bool,
+	pub no_console: bool,
 	pub raw_code_to_run: Option<String>,
 	pub version: Option<String>
 }
@@ -15,6 +16,7 @@ impl Flags {
 			code_path: None,
 			debug: false,
 			debug_heavy: false,
+			no_console: false,
 			raw_code_to_run: None,
 			version: None
 		}
@@ -32,6 +34,7 @@ impl Flags {
 					self.debug = true;
 					self.debug_heavy = true;
 				},
+				"--hide-console" => self.no_console = true,
 				"--version" => if self.version.is_none() && i + 1 < args_count {
 					self.version = Some(args[i+1].clone());
 				},

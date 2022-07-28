@@ -11,18 +11,6 @@ fn main() {
 	if env::var("RUST_LOG").is_err() {
 		env::set_var("RUST_LOG", "INFO");
 	}
-	match env::var("LOGS") {
-		Ok(val) => {
-			if val.to_lowercase() != "on" && cfg!(target_os = "windows") {
-				winconsole::window::hide();
-			}
-		}
-		Err(_) => {
-			if cfg!(target_os = "windows") {
-				winconsole::window::hide();
-			}
-		}
-	}
 	tracing_subscriber::fmt::init();
 
 	let args: Vec<String> = std::env::args().collect();
@@ -51,6 +39,14 @@ fn main() {
 	}
 	if let Some(v) = cloned_flags.version {
 		version = v;
+	}
+	if let Ok(val) = env::var("LOGS") {
+		if val.to_lowercase() == "off" && cfg!(target_os = "windows") {
+			winconsole::window::hide();
+		}
+	}
+	if cloned_flags.no_console && cfg!(target_os = "windows") {
+		winconsole::window::hide();
 	}
 	if action == *"run" {
 		Interpreter::new(version, code, code_path, flags_handler).run();
