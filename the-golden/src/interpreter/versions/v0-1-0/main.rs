@@ -16,20 +16,22 @@ pub struct Runner {
 	flags: Flags,
 
 	brackets_matcher: BracketsMatcher,
+	brackets_categorised: HashMap<String, HashMap<usize, usize>>,
 	
+	brackets: HashMap<usize, usize>,
 	raw_code: String,
 	rules: Vec<Regex>,
 	code_path: std::path::PathBuf,
 
-	brackets: HashMap<String, HashMap<usize, usize>>
+	program_pointer: usize
 }
 
 impl Runner {
 	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags) -> Self {
 		let rules = vec![
-			Regex::new(r"^!").unwrap(),
-			Regex::new(r"^\[@?").unwrap(),
-			Regex::new(r"^@?\]").unwrap(),
+			Regex::new(r"^'?!").unwrap(),
+			Regex::new(r"^'?\[@?").unwrap(),
+			Regex::new(r"^'?@?\]").unwrap(),
 			Regex::new(r"^:\r?\n?").unwrap(),
 			Regex::new("\"[^\"]*\"").unwrap()
 		];
@@ -38,11 +40,13 @@ impl Runner {
 
 			brackets_matcher: BracketsMatcher::new(),
 
+			brackets: HashMap::new(),
+			brackets_categorised: HashMap::new(),
 			raw_code,
 			rules,
 			code_path,
 
-			brackets: HashMap::new()
+			program_pointer: 0
 		}
 	}
 
@@ -54,7 +58,7 @@ impl Runner {
 		let lexer = Lexer::new(self.raw_code.clone(), self.rules.clone(), self.code_path.clone());
 		let validator_result = Validator::run(lexer.clone(), self.flags.debug_heavy);
 		if let Err(e) = validator_result {
-			println!("{}", e);
+			println!("\x1b[91mERROR\x1b[00m     {}", e);
 			return;
 		}
 		if self.flags.debug {
@@ -63,20 +67,32 @@ impl Runner {
 		let mut parser = Parser::new();
 		let parser_result = parser.run(lexer);
 		if let Err(e) = parser_result {
-			println!("{}", e);
+			println!("\x1b[91mERROR\x1b[00m     {}", e);
 			return;
 		}
 		if self.flags.debug {
 			println!("Parsed commands: {:?}", parser.commands);
 		}
 		self.brackets_matcher.match_brackets(&parser.commands);
-		self.brackets = self.brackets_matcher.brackets.clone();
+		self.brackets_categorised = self.brackets_matcher.brackets.clone();
 		if self.flags.debug_heavy {
 			println!("Matched brackets: {:?}", self.brackets_matcher.brackets);
 		}
-
+		for loop_type in self.brackets_categorised.keys() {
+			let map = self.brackets_categorised.get(loop_type).unwrap();
+			for (key, value) in map.iter() {
+				self.brackets.insert(*key, *value);
+			}
+		}
+		if self.flags.debug_heavy {
+			println!("Matched brackets uncategorised: {:?}", self.brackets);
+		}
 		if self.flags.debug {
 			println!("----- START OF CODE EXECUTION -----");
+		}
+		let program_length = parser.commands.len();
+		while self.program_pointer < program_length {
+			let command = &parser.commands[self.program_pointer];
 		}
 	}
 }
