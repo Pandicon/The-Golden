@@ -24,6 +24,7 @@ pub struct Runner {
 
 	brackets_matcher: BracketsMatcher,
 	brackets_categorised: HashMap<String, HashMap<usize, usize>>,
+	opposite_commands: HashMap<String, String>,
 
 	brackets: HashMap<usize, usize>,
 	raw_code: String,
@@ -41,7 +42,7 @@ pub struct Runner {
 impl Runner {
 	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags) -> Self {
 		let rules = vec![
-			Regex::new(r"^'?!").unwrap(),
+			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(), // increment
 			Regex::new(r"^'?\[@?").unwrap(),
 			Regex::new(r"^'?@?\]").unwrap(),
 			Regex::new(r"^:\r?\n?").unwrap(),
@@ -54,6 +55,8 @@ impl Runner {
 
 			brackets: HashMap::new(),
 			brackets_categorised: HashMap::new(),
+			opposite_commands: HashMap::from([("!".to_string(), "~".to_string())]),
+
 			raw_code,
 			rules,
 			code_path,
@@ -148,18 +151,39 @@ impl Runner {
 				(local_memory, local_memory_pointers, active_local_memory),
 			]
 		};
-		match command {
-			"!" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] += 1.0,
-			"~" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -= 1.0,
-			"+" => {
-				main_memory[main_active_memory][main_memory_pointers[main_active_memory]] +=
-					main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+		let split_command = command.split("|").collect::<Vec<&str>>();
+		let (command, repeat) = if split_command.len() == 3 {
+			let count_str = split_command[1];
+			let num = if count_str.is_empty() {
+				main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor() as i128
+			} else if let Ok(val) = count_str.parse::<i128>() {
+				val
+			} else {
+				1
+			};
+			let new_command = split_command[2];
+			if num < 0 {
+				(self.opposite_commands.get(new_command).unwrap().as_str(), num * -1)
+			} else {
+				(new_command, num)
 			}
-			"-" => {
-				main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -=
-					main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+		} else {
+			(command, 1)
+		};
+		for _ in 0..repeat {
+			match command {
+				"!" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] += 1.0,
+				"~" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -= 1.0,
+				"+" => {
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] +=
+						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+				}
+				"-" => {
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -=
+						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+				}
+				_ => {}
 			}
-			_ => {}
 		}
 		self.program_pointer += 1;
 		self.active_memory = if is_local { active_local_memory } else { main_active_memory };
