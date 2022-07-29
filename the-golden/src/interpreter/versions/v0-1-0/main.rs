@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::Flags;
+use rand::Rng;
 use regex::Regex;
 
 #[path = "./brackets_matcher.rs"]
@@ -42,11 +43,22 @@ pub struct Runner {
 impl Runner {
 	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags) -> Self {
 		let rules = vec![
-			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(), // increment
-			Regex::new(r"^'?\[@?").unwrap(),
-			Regex::new(r"^'?@?\]").unwrap(),
-			Regex::new(r"^:\r?\n?").unwrap(),
-			Regex::new("\"[^\"]*\"").unwrap(),
+			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(),  // increment
+			Regex::new(r"^'?(\|-?[0-9]*\|)*~").unwrap(),  // decrement
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\+").unwrap(), // add
+			Regex::new(r"^'?(\|-?[0-9]*\|)*-").unwrap(),  // subtract
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\*").unwrap(), // multiply
+			Regex::new(r"^'?(\|-?[0-9]*\|)*/").unwrap(),  // divide
+			Regex::new(r"^'?`").unwrap(),                 // generate a random number from 0 (inclusive) to 1 (exclusive)
+			Regex::new(r"^'?>").unwrap(),                 // move right
+			Regex::new(r"^'?<").unwrap(),                 // move left
+			Regex::new(r"^'?_").unwrap(),                 // floor
+			Regex::new(r"^'?&").unwrap(),                 // ceil
+			Regex::new(r"^'?\^").unwrap(),                // switch active memory
+			Regex::new(r"^'?\[@?").unwrap(),              // (do-)while start
+			Regex::new(r"^'?@?\]").unwrap(),              // (do-)while end
+			Regex::new(r"^:\r?\n?").unwrap(),             // end of line
+			Regex::new("\"[^\"]*\"").unwrap(),            // whitespace
 		];
 		Self {
 			flags,
@@ -55,7 +67,16 @@ impl Runner {
 
 			brackets: HashMap::new(),
 			brackets_categorised: HashMap::new(),
-			opposite_commands: HashMap::from([("!".to_string(), "~".to_string())]),
+			opposite_commands: HashMap::from([
+				("!".to_string(), "~".to_string()),
+				("~".to_string(), "!".to_string()),
+				("+".to_string(), "-".to_string()),
+				("-".to_string(), "+".to_string()),
+				("*".to_string(), "/".to_string()),
+				("/".to_string(), "*".to_string()),
+				(">".to_string(), "<".to_string()),
+				("<".to_string(), ">".to_string()),
+			]),
 
 			raw_code,
 			rules,
@@ -140,7 +161,7 @@ impl Runner {
 	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> usize {
 		let is_local = command.starts_with('\'');
 		let command = if is_local { &command[1..] } else { command };
-		let [(main_memory, main_memory_pointers, main_active_memory), (local_memory, local_memory_pointers, active_local_memory)] = if is_local {
+		let [(main_memory, main_memory_pointers, mut main_active_memory), (local_memory, local_memory_pointers, active_local_memory)] = if is_local {
 			[
 				(local_memory, local_memory_pointers, active_local_memory),
 				(&mut self.memory, &mut self.memory_pointers, self.active_memory),
@@ -163,7 +184,11 @@ impl Runner {
 			};
 			let new_command = split_command[2];
 			if num < 0 {
-				(self.opposite_commands.get(new_command).unwrap().as_str(), num * -1)
+				if let Some(opposite_command) = self.opposite_commands.get(new_command) {
+					(opposite_command.as_str(), num * -1)
+				} else {
+					(new_command, 0)
+				}
 			} else {
 				(new_command, num)
 			}
@@ -182,6 +207,32 @@ impl Runner {
 					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -=
 						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
 				}
+				"*" => {
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] *=
+						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+				}
+				"/" => {
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] /=
+						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
+				}
+				"`" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = rand::thread_rng().gen(),
+				">" => {
+					main_memory_pointers[main_active_memory] += 1;
+					if main_memory_pointers[main_active_memory] >= main_memory[main_active_memory].len() {
+						main_memory[main_active_memory].push(0.0);
+					}
+				}
+				"<" => {
+					if main_memory_pointers[main_active_memory] <= 0 {
+						main_memory[main_active_memory].insert(0, 0.0);
+						println!("{}You moved to the -1 index in memory. This will not crash the program, but should generally be avoided (you can use the --disable-warnings flag to disable all warnings or --disable-too-left-pointer-warning to disable this particular warning)", Utils::ansi_escape_text("93", "WARNING", INFO_PREFIX_LENGTH));
+					} else {
+						main_memory_pointers[main_active_memory] -= 1;
+					}
+				}
+				"_" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor(),
+				"&" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].ceil(),
+				"^" => main_active_memory = (main_active_memory as isize - 1).abs() as usize,
 				_ => {}
 			}
 		}
