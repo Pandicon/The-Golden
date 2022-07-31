@@ -38,6 +38,8 @@ pub struct Runner {
 	memory: [Vec<f64>; 2],
 	memory_pointers: [usize; 2],
 	active_memory: usize,
+
+	input_cache: Option<String>,
 }
 
 impl Runner {
@@ -57,6 +59,10 @@ impl Runner {
 			Regex::new(r"^'?\^").unwrap(),                // switch active memory
 			Regex::new(r"^'?\[@?").unwrap(),              // (do-)while start
 			Regex::new(r"^'?@?\]").unwrap(),              // (do-)while end
+			Regex::new(r"^'?\$\.").unwrap(),              // input number
+			Regex::new(r"^'?\$,").unwrap(),               // input character
+			Regex::new(r"^'?\\\.").unwrap(),              // output number
+			Regex::new(r"^'?\\,").unwrap(),               // output character
 			Regex::new(r"^:\r?\n?").unwrap(),             // end of line
 			Regex::new("\"[^\"]*\"").unwrap(),            // whitespace
 		];
@@ -88,6 +94,8 @@ impl Runner {
 			memory: [vec![0.0], vec![0.0]],
 			memory_pointers: [0, 0],
 			active_memory: 0,
+
+			input_cache: None,
 		}
 	}
 
@@ -145,7 +153,13 @@ impl Runner {
 		let program_length = parser.commands.len();
 		while self.program_pointer < program_length {
 			let command = &parser.commands[self.program_pointer];
-			active_local_memory = self.evaluate_command(command, &mut local_memory, &mut local_memory_pointers, active_local_memory);
+			active_local_memory = match self.evaluate_command(command, &mut local_memory, &mut local_memory_pointers, active_local_memory) {
+				Ok(val) => val,
+				Err(e) => {
+					println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+					break;
+				}
+			};
 		}
 		if self.flags.debug {
 			println!("\n{}----- END OF CODE EXECUTION -----", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
@@ -158,7 +172,7 @@ impl Runner {
 		}
 	}
 
-	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> usize {
+	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> Result<usize, String> {
 		let is_local = command.starts_with('\'');
 		let command = if is_local { &command[1..] } else { command };
 		let [(main_memory, main_memory_pointers, mut main_active_memory), (local_memory, local_memory_pointers, active_local_memory)] = if is_local {
@@ -172,7 +186,7 @@ impl Runner {
 				(local_memory, local_memory_pointers, active_local_memory),
 			]
 		};
-		let split_command = command.split("|").collect::<Vec<&str>>();
+		let split_command = command.split('|').collect::<Vec<&str>>();
 		let (command, repeat) = if split_command.len() == 3 {
 			let count_str = split_command[1];
 			let num = if count_str.is_empty() {
@@ -185,7 +199,7 @@ impl Runner {
 			let new_command = split_command[2];
 			if num < 0 {
 				if let Some(opposite_command) = self.opposite_commands.get(new_command) {
-					(opposite_command.as_str(), num * -1)
+					(opposite_command.as_str(), -num)
 				} else {
 					(new_command, 0)
 				}
@@ -223,7 +237,7 @@ impl Runner {
 					}
 				}
 				"<" => {
-					if main_memory_pointers[main_active_memory] <= 0 {
+					if main_memory_pointers[main_active_memory] == 0 {
 						main_memory[main_active_memory].insert(0, 0.0);
 						println!("{}You moved to the -1 index in memory. This will not crash the program, but should generally be avoided (you can use the --disable-warnings flag to disable all warnings or --disable-too-left-pointer-warning to disable this particular warning)", Utils::ansi_escape_text("93", "WARNING", INFO_PREFIX_LENGTH));
 					} else {
@@ -233,15 +247,53 @@ impl Runner {
 				"_" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor(),
 				"&" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].ceil(),
 				"^" => main_active_memory = (main_active_memory as isize - 1).abs() as usize,
+				"$." => {
+					if self.input_cache.is_none() {
+						self.input_cache = Some(Utils::get_input_line());
+					}
+					let input = &self.input_cache.clone().unwrap();
+					self.input_cache = None;
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = match input.parse::<f64>() {
+						Ok(val) => val,
+						Err(e) => {
+							return Err(format!("Failed to convert {} from input to a number: {}", input, e));
+						}
+					}
+				}
+				"$," => {
+					if self.input_cache.is_none() {
+						self.input_cache = Some(Utils::get_input_line());
+					}
+					let input = &self.input_cache.clone().unwrap();
+					let (char, remainder) = Utils::next_char(input);
+					self.input_cache = if !remainder.is_empty() { Some(remainder.to_string()) } else { None };
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = (char as u32) as f64;
+				}
+				"\\." => {
+					print!("{}", main_memory[main_active_memory][main_memory_pointers[main_active_memory]]);
+					if let Err(e) = Utils::flush_console() {
+						println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+					}
+				}
+				"\\," => match char::from_u32(main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor() as u32) {
+					Some(c) => {
+						print!("{}", c);
+						if let Err(e) = Utils::flush_console() {
+							println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+						}
+					}
+					None => {
+						return Err(format!(
+							"Failed to convert {} from memory to a character",
+							main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor()
+						));
+					}
+				},
 				_ => {}
 			}
 		}
 		self.program_pointer += 1;
 		self.active_memory = if is_local { active_local_memory } else { main_active_memory };
-		if is_local {
-			main_active_memory
-		} else {
-			active_local_memory
-		}
+		Ok(if is_local { main_active_memory } else { active_local_memory })
 	}
 }
