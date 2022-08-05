@@ -2,8 +2,8 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref COMMENT_REGEX: Regex = Regex::new("^\"").unwrap();
-    static ref NEW_LINE_REGEX: Regex = Regex::new(r"^\r?\n").unwrap();
+	static ref COMMENT_REGEX: Regex = Regex::new("^\"").unwrap();
+	static ref NEW_LINE_REGEX: Regex = Regex::new(r"^\r?\n").unwrap();
 }
 
 #[derive(Clone)]
@@ -14,12 +14,20 @@ pub struct Lexer {
 	column: usize,
 	comment: bool,
 	file_path: std::path::PathBuf,
-	position: usize
+	position: usize,
 }
 
 impl Lexer {
 	pub fn new(text: String, rules: Vec<Regex>, file_path: std::path::PathBuf) -> Self {
-		Self { text, rules, line: 1, column: 1, comment: false, file_path, position: 0 }
+		Self {
+			text,
+			rules,
+			line: 1,
+			column: 1,
+			comment: false,
+			file_path,
+			position: 0,
+		}
 	}
 
 	pub fn next(&mut self) -> Result<Option<(String, usize, usize, std::path::PathBuf)>, String> {
@@ -50,6 +58,12 @@ impl Lexer {
 				}
 			}
 		}
-		Err(format!("Syntax error at {}:{} in {:?} ({:?})", self.line, self.column, self.file_path.file_name().unwrap(), self.file_path.as_path()))
+		Err(format!(
+			"Syntax error at {}:{} in {:?} ({:?})",
+			self.line,
+			self.column,
+			self.file_path.file_name().unwrap(),
+			self.file_path.as_path()
+		))
 	}
 }

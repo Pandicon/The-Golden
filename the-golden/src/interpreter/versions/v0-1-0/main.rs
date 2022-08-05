@@ -45,26 +45,32 @@ pub struct Runner {
 impl Runner {
 	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags) -> Self {
 		let rules = vec![
-			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(),  // increment
-			Regex::new(r"^'?(\|-?[0-9]*\|)*~").unwrap(),  // decrement
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\+").unwrap(), // add
-			Regex::new(r"^'?(\|-?[0-9]*\|)*-").unwrap(),  // subtract
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\*").unwrap(), // multiply
-			Regex::new(r"^'?(\|-?[0-9]*\|)*/").unwrap(),  // divide
-			Regex::new(r"^'?`").unwrap(),                 // generate a random number from 0 (inclusive) to 1 (exclusive)
-			Regex::new(r"^'?>").unwrap(),                 // move right
-			Regex::new(r"^'?<").unwrap(),                 // move left
-			Regex::new(r"^'?_").unwrap(),                 // floor
-			Regex::new(r"^'?&").unwrap(),                 // ceil
-			Regex::new(r"^'?\^").unwrap(),                // switch active memory
-			Regex::new(r"^'?\[@?").unwrap(),              // (do-)while start
-			Regex::new(r"^'?@?\]").unwrap(),              // (do-)while end
-			Regex::new(r"^'?\$\.").unwrap(),              // input number
-			Regex::new(r"^'?\$,").unwrap(),               // input character
-			Regex::new(r"^'?\\\.").unwrap(),              // output number
-			Regex::new(r"^'?\\,").unwrap(),               // output character
-			Regex::new(r"^:\r?\n?").unwrap(),             // end of line
-			Regex::new("\"[^\"]*\"").unwrap(),            // whitespace
+			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(),   // increment
+			Regex::new(r"^'?(\|-?[0-9]*\|)*~").unwrap(),   // decrement
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\+").unwrap(),  // add
+			Regex::new(r"^'?(\|-?[0-9]*\|)*-").unwrap(),   // subtract
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\*").unwrap(),  // multiply
+			Regex::new(r"^'?(\|-?[0-9]*\|)*/").unwrap(),   // divide
+			Regex::new(r"^'?`").unwrap(),                  // generate a random number from 0 (inclusive) to 1 (exclusive)
+			Regex::new(r"^'?(\|-?[0-9]*\|)*>").unwrap(),   // move right
+			Regex::new(r"^'?(\|-?[0-9]*\|)*<").unwrap(),   // move left
+			Regex::new(r"^'?_").unwrap(),                  // floor
+			Regex::new(r"^'?&").unwrap(),                  // ceil
+			Regex::new(r"^'?\^").unwrap(),                 // switch active memory
+			Regex::new(r"^'?\[@?").unwrap(),               // (do-)while start
+			Regex::new(r"^'?@?\]").unwrap(),               // (do-)while end
+			Regex::new(r"^'?\$\.").unwrap(),               // input number
+			Regex::new(r"^'?\$,").unwrap(),                // input character
+			Regex::new(r"^'?\\\.").unwrap(),               // output number
+			Regex::new(r"^'?\\,").unwrap(),                // output character
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\?=").unwrap(), // break if active memory address is equal to inactive memory address
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\?>").unwrap(), // break if active memory address is greater than inactive memory address
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\?<").unwrap(), // break if active memory address is less than inactive memory address
+			Regex::new(r"^'?\?\?").unwrap(),               // set current active memory address to its index
+			Regex::new(r"^'?;").unwrap(),                  // swap main and local memory addresses
+			Regex::new(r"^:\r?\n?").unwrap(),              // end of line
+			Regex::new("^\"[^\"]*\"").unwrap(),            // comments
+			Regex::new(r"^[ \t\f\v]").unwrap(),            // whitespace
 		];
 		Self {
 			flags,
@@ -175,7 +181,7 @@ impl Runner {
 	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> Result<usize, String> {
 		let is_local = command.starts_with('\'');
 		let command = if is_local { &command[1..] } else { command };
-		let [(main_memory, main_memory_pointers, mut main_active_memory), (local_memory, local_memory_pointers, active_local_memory)] = if is_local {
+		let [(main_memory, main_memory_pointers, mut main_active_memory), (local_memory, local_memory_pointers, local_active_memory)] = if is_local {
 			[
 				(local_memory, local_memory_pointers, active_local_memory),
 				(&mut self.memory, &mut self.memory_pointers, self.active_memory),
@@ -318,11 +324,43 @@ impl Runner {
 						self.loops.push(self.program_pointer);
 					}
 				}
+				"?=" => {
+					let inactive_memory = (main_active_memory as isize - 1).abs() as usize;
+					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] == main_memory[inactive_memory][main_memory_pointers[inactive_memory]] {
+						if let Some(current_loop) = self.loops.pop() {
+							self.program_pointer = *self.brackets.get(&current_loop).unwrap();
+						}
+					}
+				}
+				"?>" => {
+					let inactive_memory = (main_active_memory as isize - 1).abs() as usize;
+					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] > main_memory[inactive_memory][main_memory_pointers[inactive_memory]] {
+						if let Some(current_loop) = self.loops.pop() {
+							self.program_pointer = *self.brackets.get(&current_loop).unwrap();
+						}
+					}
+				}
+				"?<" => {
+					let inactive_memory = (main_active_memory as isize - 1).abs() as usize;
+					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] < main_memory[inactive_memory][main_memory_pointers[inactive_memory]] {
+						if let Some(current_loop) = self.loops.pop() {
+							self.program_pointer = *self.brackets.get(&current_loop).unwrap();
+						}
+					}
+				}
+				"??" => {
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory_pointers[main_active_memory] as f64;
+				}
+				";" => {
+					let holder = local_memory[local_active_memory][local_memory_pointers[local_active_memory]];
+					local_memory[local_active_memory][local_memory_pointers[local_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]];
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = holder;
+				}
 				_ => {}
 			}
 		}
 		self.program_pointer += 1;
-		self.active_memory = if is_local { active_local_memory } else { main_active_memory };
-		Ok(if is_local { main_active_memory } else { active_local_memory })
+		self.active_memory = if is_local { local_active_memory } else { main_active_memory };
+		Ok(if is_local { main_active_memory } else { local_active_memory })
 	}
 }
