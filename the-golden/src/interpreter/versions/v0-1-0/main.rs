@@ -289,6 +289,35 @@ impl Runner {
 						));
 					}
 				},
+				"[" => {
+					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] == 0.0 {
+						if let Some(index) = self.loops.iter().position(|value| *value == self.program_pointer) {
+							self.loops.remove(index);
+						}
+						self.program_pointer = *self.brackets.get(&self.program_pointer).unwrap();
+					} else if !self.loops.contains(&self.program_pointer) {
+						self.loops.push(self.program_pointer);
+					}
+				}
+				"]" | "@]" => {
+					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] == 0.0 {
+						if let Some(index) = self.loops.iter().position(|value| *value == self.program_pointer) {
+							self.loops.remove(index);
+						}
+					} else {
+						self.program_pointer = *self.brackets.get(&self.program_pointer).unwrap();
+					}
+				}
+				"[@" => {
+					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] == 0.0 && self.loops.contains(&self.program_pointer) {
+						if let Some(index) = self.loops.iter().position(|value| *value == self.program_pointer) {
+							self.loops.remove(index);
+						}
+						self.program_pointer = *self.brackets.get(&self.program_pointer).unwrap();
+					} else if !self.loops.contains(&self.program_pointer) {
+						self.loops.push(self.program_pointer);
+					}
+				}
 				_ => {}
 			}
 		}
