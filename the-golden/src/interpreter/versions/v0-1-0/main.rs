@@ -180,6 +180,7 @@ impl Runner {
 
 	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> Result<usize, String> {
 		let is_local = command.starts_with('\'');
+		let raw_command = command;
 		let command = if is_local { &command[1..] } else { command };
 		let [(main_memory, main_memory_pointers, mut main_active_memory), (local_memory, local_memory_pointers, local_active_memory)] = if is_local {
 			[
@@ -361,6 +362,20 @@ impl Runner {
 		}
 		self.program_pointer += 1;
 		self.active_memory = if is_local { local_active_memory } else { main_active_memory };
+		if self.flags.debug_heavy {
+			println!("\n{}Raw command: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), raw_command);
+			println!("{}Command executed: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), command);
+			println!(
+				"{}Command was executed on local memory: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH),
+				is_local
+			);
+			println!("{}Command repetitions: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), repeat);
+			println!("{}Global memory: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.memory);
+			println!("{}Global memory pointers: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.memory_pointers);
+			println!("{}Active global memory: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.active_memory);
+			std::thread::sleep(std::time::Duration::from_millis(500));
+		}
 		Ok(if is_local { main_active_memory } else { local_active_memory })
 	}
 }
