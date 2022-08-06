@@ -1,4 +1,5 @@
 use dotenv::dotenv;
+use enable_ansi_support;
 use std::env;
 
 #[path = "./flags.rs"]
@@ -17,7 +18,7 @@ fn main() {
 		env::set_var("RUST_LOG", "INFO");
 	}
 	tracing_subscriber::fmt::init();
-
+	let ansi_enabled = enable_ansi_support::enable_ansi_support().is_ok();
 	let args: Vec<String> = std::env::args().collect();
 
 	let mut flags_handler = Flags::new();
@@ -53,5 +54,5 @@ fn main() {
 	if cloned_flags.no_console && cfg!(target_os = "windows") {
 		winconsole::window::hide();
 	}
-	Interpreter::new(version, code, code_path, flags_handler).run();
+	Interpreter::new(version, code, code_path, flags_handler, ansi_enabled).run();
 }

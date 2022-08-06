@@ -18,10 +18,11 @@ pub use parser::Parser;
 mod validator;
 use validator::Validator;
 
-const INFO_PREFIX_LENGTH: usize = 12;
+pub const INFO_PREFIX_LENGTH: usize = 12;
 
 pub struct Runner {
 	flags: Flags,
+	ansi_enabled: bool,
 
 	brackets_matcher: BracketsMatcher,
 	brackets_categorised: HashMap<String, HashMap<usize, usize>>,
@@ -43,7 +44,7 @@ pub struct Runner {
 }
 
 impl Runner {
-	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags) -> Self {
+	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool) -> Self {
 		let rules = vec![
 			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(),   // increment
 			Regex::new(r"^'?(\|-?[0-9]*\|)*~").unwrap(),   // decrement
@@ -74,6 +75,7 @@ impl Runner {
 		];
 		Self {
 			flags,
+			ansi_enabled,
 
 			brackets_matcher: BracketsMatcher::new(),
 
@@ -107,33 +109,36 @@ impl Runner {
 
 	pub fn run(&mut self) {
 		if self.flags.debug {
-			println!("{}Running version 0.1.0", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
-			println!("{}Raw code: {}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH), self.raw_code);
+			println!("{}Raw code: {}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled), self.raw_code);
 		}
 		let lexer = Lexer::new(self.raw_code.clone(), self.rules.clone(), self.code_path.clone());
-		let validator_result = Validator::run(lexer.clone(), self.flags.debug_heavy);
+		let validator_result = Validator::run(lexer.clone(), self.flags.debug_heavy, self.ansi_enabled);
 		if let Err(e) = validator_result {
-			println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+			println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, self.ansi_enabled), e);
 			return;
 		}
 		if self.flags.debug {
-			println!("{}Valid code!", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
+			println!("{}Valid code!", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
 		}
 		let mut parser = Parser::new();
 		let parser_result = parser.run(lexer);
 		if let Err(e) = parser_result {
-			println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+			println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, self.ansi_enabled), e);
 			return;
 		}
 		if self.flags.debug {
-			println!("{}Parsed commands: {:?}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH), parser.commands);
+			println!(
+				"{}Parsed commands: {:?}",
+				Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
+				parser.commands
+			);
 		}
 		self.brackets_matcher.match_brackets(&parser.commands);
 		self.brackets_categorised = self.brackets_matcher.brackets.clone();
 		if self.flags.debug_heavy {
 			println!(
 				"{}Matched brackets: {:?}",
-				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH),
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
 				self.brackets_matcher.brackets
 			);
 		}
@@ -146,12 +151,12 @@ impl Runner {
 		if self.flags.debug_heavy {
 			println!(
 				"{}Matched brackets uncategorised: {:?}",
-				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH),
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
 				self.brackets
 			);
 		}
 		if self.flags.debug {
-			println!("{}----- START OF CODE EXECUTION -----", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
+			println!("{}----- START OF CODE EXECUTION -----", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
 		}
 		let mut local_memory: [Vec<f64>; 2] = [vec![0.0], vec![0.0]];
 		let mut local_memory_pointers: [usize; 2] = [0, 0];
@@ -162,19 +167,19 @@ impl Runner {
 			active_local_memory = match self.evaluate_command(command, &mut local_memory, &mut local_memory_pointers, active_local_memory) {
 				Ok(val) => val,
 				Err(e) => {
-					println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+					println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, self.ansi_enabled), e);
 					break;
 				}
 			};
 		}
 		if self.flags.debug {
-			println!("\n{}----- END OF CODE EXECUTION -----", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
+			println!("\n{}----- END OF CODE EXECUTION -----", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
 		}
 		if self.flags.debug {
-			println!("{}Main memory:", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
-			println!("{}{:?}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH), self.memory);
-			println!("{}Local memory:", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH));
-			println!("{}{:?}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH), local_memory);
+			println!("{}Main memory:", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
+			println!("{}{:?}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled), self.memory);
+			println!("{}Local memory:", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
+			println!("{}{:?}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled), local_memory);
 		}
 	}
 
@@ -247,7 +252,7 @@ impl Runner {
 					if main_memory_pointers[main_active_memory] == 0 {
 						main_memory[main_active_memory].insert(0, 0.0);
 						if !self.flags.disabled_warnings.too_left_pointer {
-							println!("{}You moved to the -1 index in memory. This will not crash the program, but should generally be avoided (you can use the --disable-warnings flag to disable all warnings or --disable-too-left-pointer-warning to disable this particular warning)", Utils::ansi_escape_text("93", "WARNING", INFO_PREFIX_LENGTH));
+							println!("{}You moved to the -1 index in memory. This will not crash the program, but should generally be avoided (you can use the --disable-warnings flag to disable all warnings or --disable-too-left-pointer-warning to disable this particular warning)", Utils::ansi_escape_text("93", "WARNING", INFO_PREFIX_LENGTH, self.ansi_enabled));
 						}
 					} else {
 						main_memory_pointers[main_active_memory] -= 1;
@@ -281,14 +286,14 @@ impl Runner {
 				"\\." => {
 					print!("{}", main_memory[main_active_memory][main_memory_pointers[main_active_memory]]);
 					if let Err(e) = Utils::flush_console() {
-						println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+						println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, self.ansi_enabled), e);
 					}
 				}
 				"\\," => match char::from_u32(main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor() as u32) {
 					Some(c) => {
 						print!("{}", c);
 						if let Err(e) = Utils::flush_console() {
-							println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH), e);
+							println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, self.ansi_enabled), e);
 						}
 					}
 					None => {
@@ -366,17 +371,37 @@ impl Runner {
 		self.program_pointer += 1;
 		self.active_memory = if is_local { local_active_memory } else { main_active_memory };
 		if self.flags.debug_heavy {
-			println!("\n{}Raw command: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), raw_command);
-			println!("{}Command executed: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), command);
+			println!(
+				"\n{}Raw command: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
+				raw_command
+			);
+			println!("{}Command executed: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled), command);
 			println!(
 				"{}Command was executed on local memory: {:?}",
-				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH),
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
 				is_local
 			);
-			println!("{}Command repetitions: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), repeat);
-			println!("{}Global memory: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.memory);
-			println!("{}Global memory pointers: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.memory_pointers);
-			println!("{}Active global memory: {:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH), self.active_memory);
+			println!(
+				"{}Command repetitions: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
+				repeat
+			);
+			println!(
+				"{}Global memory: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
+				self.memory
+			);
+			println!(
+				"{}Global memory pointers: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
+				self.memory_pointers
+			);
+			println!(
+				"{}Active global memory: {:?}",
+				Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled),
+				self.active_memory
+			);
 			std::thread::sleep(std::time::Duration::from_millis(500));
 		}
 		Ok(if is_local { main_active_memory } else { local_active_memory })
