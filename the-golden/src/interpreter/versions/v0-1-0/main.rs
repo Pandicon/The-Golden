@@ -355,9 +355,10 @@ impl Runner {
 					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory_pointers[main_active_memory] as f64;
 				}
 				";" => {
-					let holder = local_memory[local_active_memory][local_memory_pointers[local_active_memory]];
-					local_memory[local_active_memory][local_memory_pointers[local_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]];
-					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = holder;
+					std::mem::swap(
+						&mut local_memory[local_active_memory][local_memory_pointers[local_active_memory]],
+						&mut main_memory[main_active_memory][main_memory_pointers[main_active_memory]],
+					);
 				}
 				_ => {}
 			}
