@@ -60,10 +60,20 @@ impl Flags {
 					if self.action.is_none() {
 						self.action = Some(String::from("run"));
 						if self.code_path.is_none() && i + 1 < args_count && !args[i + 1].starts_with('-') {
-							let mut path = std::path::PathBuf::from(args[0].clone());
-							path.pop();
-							path.push(args[i + 1].clone());
-							path.set_file_name("maumivu.au");
+							let mut path = if args[i + 1].starts_with('.') || args[i + 1].starts_with('/') {
+								let mut p = std::path::PathBuf::from(args[0].clone());
+								p.pop();
+								p.push(args[i + 1].clone());
+								p
+							} else {
+								std::path::PathBuf::from(args[i + 1].clone())
+							};
+							if path.is_file() {
+								path.set_file_name("maumivu.au");
+							} else {
+								path.push("maumivu.au");
+							}
+							println!("{path:?}");
 							self.code_path = Some(path);
 						}
 					}
