@@ -73,7 +73,6 @@ impl Flags {
 							} else {
 								path.push("maumivu.au");
 							}
-							println!("{path:?}");
 							self.code_path = Some(path);
 						}
 					}
