@@ -1,24 +1,33 @@
 #[derive(Clone, Debug)]
+pub struct Warnings {
+	pub too_left_pointer: bool,
+}
+
+#[derive(Clone, Debug)]
 pub struct Flags {
+	pub disabled_warnings: Warnings,
+
 	pub action: Option<String>,
 	pub code_path: Option<std::path::PathBuf>,
 	pub debug: bool,
 	pub debug_heavy: bool,
 	pub no_console: bool,
 	pub raw_code_to_run: Option<String>,
-	pub version: Option<String>
+	pub version: Option<String>,
 }
 
 impl Flags {
 	pub fn new() -> Self {
 		Self {
+			disabled_warnings: Warnings { too_left_pointer: false },
+
 			action: None,
 			code_path: None,
 			debug: false,
 			debug_heavy: false,
 			no_console: false,
 			raw_code_to_run: None,
-			version: None
+			version: None,
 		}
 	}
 
@@ -33,22 +42,30 @@ impl Flags {
 				"--debug-heavy" => {
 					self.debug = true;
 					self.debug_heavy = true;
-				},
+				}
 				"--hide-console" => self.no_console = true,
-				"--version" => if self.version.is_none() && i + 1 < args_count {
-					self.version = Some(args[i+1].clone());
-				},
-				"-" => if self.raw_code_to_run.is_none() && i + 1 < args_count {
-					self.raw_code_to_run = Some(args[i+1].clone());
-				},
-				"run" => if self.action.is_none() {
-					self.action = Some(String::from("run"));
-					if self.code_path.is_none() && i + 1 < args_count && !args[i+1].starts_with('-') {
-						let mut path = std::path::PathBuf::from(args[0].clone());
-						path.pop();
-						path.push(args[i+1].clone());
-						path.set_file_name("maumivu.au");
-						self.code_path = Some(path);
+				"--version" => {
+					if self.version.is_none() && i + 1 < args_count {
+						self.version = Some(args[i + 1].clone());
+					}
+				}
+				"--disable-warnings" => self.disabled_warnings = Warnings { too_left_pointer: true },
+				"--disable-too-left-pointer-warning" => self.disabled_warnings.too_left_pointer = true,
+				"-" => {
+					if self.raw_code_to_run.is_none() && i + 1 < args_count {
+						self.raw_code_to_run = Some(args[i + 1].clone());
+					}
+				}
+				"run" => {
+					if self.action.is_none() {
+						self.action = Some(String::from("run"));
+						if self.code_path.is_none() && i + 1 < args_count && !args[i + 1].starts_with('-') {
+							let mut path = std::path::PathBuf::from(args[0].clone());
+							path.pop();
+							path.push(args[i + 1].clone());
+							path.set_file_name("maumivu.au");
+							self.code_path = Some(path);
+						}
 					}
 				}
 				_ => {}

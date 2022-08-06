@@ -1,11 +1,14 @@
 use dotenv::dotenv;
 use std::env;
 
-#[path = "./flags.rs"] mod flags;
+#[path = "./flags.rs"]
+mod flags;
 pub use flags::Flags;
-#[path = "./interpreter/interpreter.rs"] mod interpreter;
+#[path = "./interpreter/interpreter.rs"]
+mod interpreter;
 use interpreter::Interpreter;
-#[path = "./utils.rs"] mod utils;
+#[path = "./utils.rs"]
+mod utils;
 pub use utils::Utils;
 
 fn main() {
@@ -20,19 +23,19 @@ fn main() {
 	let mut flags_handler = Flags::new();
 	flags_handler.parse(&args);
 
-	let mut action = String::new();
+	let mut _action = String::new();
 	let mut version = String::from("latest");
 	let mut code = String::new();
 	let mut code_path = std::path::PathBuf::new();
 
 	let cloned_flags = flags_handler.clone();
 	if let Some(a) = cloned_flags.action {
-		action = a;
+		_action = a;
 	}
 	if let Some(path) = cloned_flags.code_path {
 		code = match std::fs::read_to_string(&path) {
 			Ok(c) => c,
-			Err(e) => panic!("{}", e)
+			Err(e) => panic!("{}", e),
 		};
 		code_path = path;
 	} else if let Some(code_to_run) = cloned_flags.raw_code_to_run {
@@ -50,9 +53,5 @@ fn main() {
 	if cloned_flags.no_console && cfg!(target_os = "windows") {
 		winconsole::window::hide();
 	}
-	if action == *"run" {
-		Interpreter::new(version, code, code_path, flags_handler).run();
-	} else {
-		todo!()
-	}
+	Interpreter::new(version, code, code_path, flags_handler).run();
 }

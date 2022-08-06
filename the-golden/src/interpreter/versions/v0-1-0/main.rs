@@ -246,7 +246,9 @@ impl Runner {
 				"<" => {
 					if main_memory_pointers[main_active_memory] == 0 {
 						main_memory[main_active_memory].insert(0, 0.0);
-						println!("{}You moved to the -1 index in memory. This will not crash the program, but should generally be avoided (you can use the --disable-warnings flag to disable all warnings or --disable-too-left-pointer-warning to disable this particular warning)", Utils::ansi_escape_text("93", "WARNING", INFO_PREFIX_LENGTH));
+						if !self.flags.disabled_warnings.too_left_pointer {
+							println!("{}You moved to the -1 index in memory. This will not crash the program, but should generally be avoided (you can use the --disable-warnings flag to disable all warnings or --disable-too-left-pointer-warning to disable this particular warning)", Utils::ansi_escape_text("93", "WARNING", INFO_PREFIX_LENGTH));
+						}
 					} else {
 						main_memory_pointers[main_active_memory] -= 1;
 					}
