@@ -66,7 +66,6 @@ impl Runner {
 			Regex::new(r"^'?(\|-?[0-9]*\|)*\?=").unwrap(), // break if active memory address is equal to inactive memory address
 			Regex::new(r"^'?(\|-?[0-9]*\|)*\?>").unwrap(), // break if active memory address is greater than inactive memory address
 			Regex::new(r"^'?(\|-?[0-9]*\|)*\?<").unwrap(), // break if active memory address is less than inactive memory address
-			Regex::new(r"^'?\?\?").unwrap(),               // set current active memory address to its index
 			Regex::new(r"^'?;").unwrap(),                  // swap main and local memory addresses
 			Regex::new(r"^:\r?\n?").unwrap(),              // end of line
 			Regex::new("^\"[^\"]*\"").unwrap(),            // comments
@@ -350,9 +349,6 @@ impl Runner {
 							self.program_pointer = *self.brackets.get(&current_loop).unwrap();
 						}
 					}
-				}
-				"??" => {
-					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory_pointers[main_active_memory] as f64;
 				}
 				";" => {
 					std::mem::swap(
