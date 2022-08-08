@@ -43,8 +43,8 @@ impl Handler {
 					break;
 				}
 			}
-			if to_return.is_some() {
-				to_return.unwrap()
+			if let Some(to_return) = to_return {
+				to_return
 			} else {
 				self.versions.versions.last().unwrap()
 			}
@@ -55,17 +55,13 @@ impl Handler {
 				current_subversion = current_subversion.sub.last().unwrap();
 			} else {
 				let mut to_return: Option<&Version> = None;
-				for subversion in current_subversion.sub.as_ref() {
+				for subversion in &current_subversion.sub {
 					if subversion.value == *ver {
 						to_return = Some(subversion);
 						break;
 					}
 				}
-				if to_return.is_some() {
-					current_subversion = to_return.unwrap()
-				} else {
-					current_subversion = current_subversion.sub.last().unwrap()
-				}
+				current_subversion = if let Some(to_return) = to_return { to_return } else { current_subversion.sub.last().unwrap() }
 			}
 			version_parsed.push(current_subversion.value.clone());
 		}
@@ -102,12 +98,12 @@ impl Versions {
 }
 
 struct Version {
-	sub: Box<Vec<Version>>,
+	sub: Vec<Version>,
 	value: String,
 }
 
 impl Version {
 	fn new(value: String, sub: Vec<Version>) -> Self {
-		Self { sub: Box::new(sub), value }
+		Self { sub, value }
 	}
 }

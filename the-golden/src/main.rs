@@ -1,5 +1,4 @@
 use dotenv::dotenv;
-use enable_ansi_support;
 use std::env;
 
 #[path = "./flags.rs"]
