@@ -4,6 +4,8 @@ use crate::Flags;
 mod v0_1_0;
 #[path = "./v0-2-0/main.rs"]
 mod v0_2_0;
+#[path = "./v0-3-0/main.rs"]
+mod v0_3_0;
 
 pub struct Handler {
 	versions: Versions,
@@ -16,6 +18,7 @@ impl Handler {
 			vec![
 				Version::new(String::from("1"), vec![Version::new(String::from("0"), vec![])]),
 				Version::new(String::from("2"), vec![Version::new(String::from("0"), vec![])]),
+				Version::new(String::from("3"), vec![Version::new(String::from("0"), vec![])]),
 			],
 		);
 		let versions = Versions::new(vec![versions_0]);
@@ -117,6 +120,12 @@ impl Handler {
 					println!("{}Running version 0.2.0", crate::Utils::ansi_escape_text("94", "DEBUG", v0_2_0::INFO_PREFIX_LENGTH, ansi_enabled));
 				};
 				v0_2_0::Runner::new(code, code_path, flags, ansi_enabled).run()
+			}
+			"0.3.0" => {
+				if flags.debug {
+					println!("{}Running version 0.2.0", crate::Utils::ansi_escape_text("94", "DEBUG", v0_3_0::INFO_PREFIX_LENGTH, ansi_enabled));
+				};
+				v0_3_0::Runner::new(code, code_path, flags, ansi_enabled).run()
 			}
 			_ => {
 				println!(
