@@ -1,0 +1,18 @@
+[package]
+name = "the-golden"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenv = "0.15.0"
+enable-ansi-support = "0.1.2"
+lazy_static = "1.4.0"
+rand = "0.8.5"
+regex = "1.6.0"
+tracing = "0.1.35"
+tracing-subscriber = "0.3.15"
+
+[target.'cfg(windows)'.dependencies]
+winconsole = { version = "0.11.1", features = ["window"] }
