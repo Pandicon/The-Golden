@@ -21,13 +21,14 @@ This language is a fairly good language inspired by a faily popular language cal
 
 ## How to run your code <a name="run-code"></a>
 
-All you need to do it run the interpreter file with Python 3.5 and higher.
+All you need to do it run the interpreter file with the `run` argument and a path to the maumivu.au file (for example `the-golden run .`). You will have to download a binary from one of the [releases](https://github.com/Pandicon/The-Golden/releases) (I recommend using the [latest one](https://github.com/Pandicon/The-Golden/releases/latest/)). Then you will have to set it up in a way you want - you can either run the binary from a specific place, or set it up as a custom command.
 
 ### Arguments <a name="run-code-args"></a>
 
 You can run the code with some arguments including:
 
--   The maumivu.au file location (you will be asked to provide it if you don't include it in the arguments)
+-   The maumivu.au file location
+-   Code to run if you don't provide the maumivu.au file location
 -   Some flags
 
 ### Flags <a name="run-code-flags"></a>
@@ -39,15 +40,16 @@ See the table below for some flags you can provide when running your code.
 | --debug | `--debug` | Enabled debug mode - print parsed commands, which command was ran and the memory state at the end of execution |
 | --debug-heavy | `--debug-heavy` | Enabled heavy debug mode - print all the things printed in debug mode + stop for 0.5 seconds after each command and print the memory state |
 | --disable-warnings | `--disable-warnings` | Disable all warnings |
-| --disable-path-warning | `--disable-path-warning` | Disable the "No path provided" warning (fired when running code from args) |
 | --disable-too-left-pointer-warning | `--disable-too-left-pointer-warning` | Disable the warning fired when you go to the -1 index in memory |
+| --hide-console | `--hide-console` | Hide the console when running the code |
+| --version | `--version 0.1.0` | Run the code using a specific version of the interpreter |
 
 ## Main features <a name="main-features"></a>
 
 How good or bad the features of this language are is completely subjective, but here are some of them:
 
 -   Brainfuck-like syntax - other will have no idea wth your code does
--   Easy operations chaining - forget code looking like `>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.<<<<<<<<<<<<<<<<<<<<<<<<<<`, now you can do `|49|\,|26|<` to achieve the exact same result
+-   Easy operations chaining - forget code looking like `>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.<<<<<<<<<<<<<<<<<<<<<<<<<<`, now you can do `|49|>\,|26|<` to achieve the exact same result
 -   Easy arithmetics - tired of multiplication in O(N^2) time? The solution is here! Just do `*` and you are done in ~O(1)
 -   Decimal numbers - pretty self-explanatory, but now you can use decimal numbers in your code
 -   And much more!
@@ -87,16 +89,16 @@ The magic of Brainfuck-like syntax is that it is easy and extremely difficult at
 | - | Subtracts the cell in the inactive row from the cell in the active row | `-` | Yes | Yes |
 | * | Multiplies the cell in the active row by the cell in the inactive row | `*`| Yes | Yes |
 | / | Divides the cell in the active row by the cell in the inactive row |`/`| Yes | Yes |
-| _ | Floors the current cell value (towards -infinity) |`_`| No | Yes |
+| _ | Floors the current cell value (towards -infinity) |`\_`| No | Yes |
 | & | Ceils the current cell value (towards +infinity) |`&`| No | Yes |
 | ` | Sets the cell to a random number from 0 (inclusive) to 1 (exclusive) | <code>`</code> | No | Yes |
 | > | Move the cell pointer one to the right | `>`| Yes | Yes |
 | < | Move the cell pointer one to the left |`<`| Yes | Yes |
 | ^ | Switch active memory (sets the active as inactive and the inactive as active) |`^`| No | Yes |
-| $. | Sets the cell to the value of user input as a number (if they input 69, the cell value will be 69) |`$.` | No | Yes |
+| $. | Sets the cell to the value of user input as a number (if they input 69, the cell value will be 69) | `$.` | No | Yes |
 | $, | Sets the cell to the value of user input as a character (if they input E, the cell value will be 69) | `$,`| No | Yes |
-| \. | Output the cell as a number (if the cell value is 69, 69 will be printed) |`\.`| No | Yes |
-| \, | Output the cell as a character (if the cell value is 69, E will be printed) |`\,`| No | Yes |
+| \\. | Output the cell as a number (if the cell value is 69, 69 will be printed) |`\.`| No | Yes |
+| \\, | Output the cell as a character (if the cell value is 69, E will be printed) |`\,`| No | Yes |
 | [ | Start a while loop |`[` | No | Yes |
 | ] | End a while loop | `]` | No | Yes |
 | [@ | Start a do-while loop | `[@` | No | Yes |
@@ -114,7 +116,7 @@ Each line has to end with a punctuation (`:`) or else the program will crash.
 
 -   Functions
 -   Running other files
--   A compiled interpreter
+-   A compiled interpreter ✔️
 
 ## Examples <a name="examples"></a>
 
