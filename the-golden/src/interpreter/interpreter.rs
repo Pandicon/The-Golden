@@ -16,7 +16,7 @@ pub struct Interpreter {
 impl Interpreter {
 	pub fn new(mut version: String, code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool) -> Self {
 		let versions_handler = versions_handler::Handler::new();
-		version = versions_handler.parse_version(version);
+		version = versions_handler.parse_version(version, ansi_enabled);
 		Self {
 			flags,
 			ansi_enabled,
