@@ -11,6 +11,8 @@ use interpreter::Interpreter;
 mod utils;
 pub use utils::Utils;
 
+pub const INFO_PREFIX_LENGTH: usize = 12;
+
 fn main() {
 	dotenv().ok();
 	if env::var("RUST_LOG").is_err() {
@@ -35,12 +37,26 @@ fn main() {
 	if let Some(path) = cloned_flags.code_path {
 		code = match std::fs::read_to_string(&path) {
 			Ok(c) => c,
-			Err(e) => panic!("{}", e),
+			Err(e) => {
+				println!(
+					"{}Couldn't open a maumivu.au file from the provided path: {}",
+					Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, ansi_enabled),
+					e
+				);
+				return;
+			}
 		};
 		code_path = path;
 	} else if let Some(code_to_run) = cloned_flags.raw_code_to_run {
 		code = code_to_run;
 		code_path.set_file_name("<console_input_main>");
+	}
+	if code.is_empty() {
+		println!(
+			"{}No code provided - either provide a path to the maumivu.au file, or use the '- <code>' flag to run code from the command line directly",
+			Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, ansi_enabled)
+		);
+		return;
 	}
 	if let Some(v) = cloned_flags.version {
 		version = v;

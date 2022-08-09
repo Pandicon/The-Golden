@@ -93,7 +93,7 @@ impl Handler {
 			String::new()
 		};
 		let version_final = format!("{}{}", version_parsed.join("."), prerelease);
-		if version_original != version_final {
+		if version_original != version_final && version_original.to_lowercase() != "latest" {
 			println!(
 				"{}Could not find version {}, instead found {}",
 				crate::Utils::ansi_escape_text("93", "WARNING", v0_1_0::INFO_PREFIX_LENGTH, ansi_enabled),
