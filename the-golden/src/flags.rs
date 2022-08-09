@@ -60,7 +60,7 @@ impl Flags {
 					if self.action.is_none() {
 						self.action = Some(String::from("run"));
 						if self.code_path.is_none() && i + 1 < args_count && !args[i + 1].starts_with('-') {
-							let mut path = if args[i + 1].starts_with('.') || args[i + 1].starts_with('/') {
+							let mut path = if args[i + 1] != "." && (args[i + 1].starts_with('.') || args[i + 1].starts_with('/')) {
 								let mut p = std::path::PathBuf::from(args[0].clone());
 								p.pop();
 								p.push(args[i + 1].clone());
