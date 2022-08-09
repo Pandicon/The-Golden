@@ -225,22 +225,10 @@ impl Runner {
 			match command {
 				"!" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] += 1.0,
 				"~" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -= 1.0,
-				"+" => {
-					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] +=
-						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
-				}
-				"-" => {
-					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -=
-						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
-				}
-				"*" => {
-					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] *=
-						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
-				}
-				"/" => {
-					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] /=
-						main_memory[(main_active_memory as isize - 1).abs() as usize][main_memory_pointers[(main_active_memory as isize - 1).abs() as usize]]
-				}
+				"+" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] += main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
+				"-" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -= main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
+				"*" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] *= main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
+				"/" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] /= main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
 				"`" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = rand::thread_rng().gen(),
 				">" => {
 					main_memory_pointers[main_active_memory] += 1;
@@ -260,7 +248,7 @@ impl Runner {
 				}
 				"_" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor(),
 				"&" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].ceil(),
-				"^" => main_active_memory = (main_active_memory as isize - 1).abs() as usize,
+				"^" => main_active_memory ^= 1,
 				"$." => {
 					if self.input_cache.is_none() {
 						self.input_cache = Some(Utils::get_input_line());
@@ -333,7 +321,7 @@ impl Runner {
 					}
 				}
 				"?=" => {
-					let inactive_memory = (main_active_memory as isize - 1).abs() as usize;
+					let inactive_memory = main_active_memory ^ 1;
 					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] == main_memory[inactive_memory][main_memory_pointers[inactive_memory]] {
 						if let Some(current_loop) = self.loops.pop() {
 							self.program_pointer = *self.brackets.get(&current_loop).unwrap();
@@ -341,7 +329,7 @@ impl Runner {
 					}
 				}
 				"?>" => {
-					let inactive_memory = (main_active_memory as isize - 1).abs() as usize;
+					let inactive_memory = main_active_memory ^ 1;
 					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] > main_memory[inactive_memory][main_memory_pointers[inactive_memory]] {
 						if let Some(current_loop) = self.loops.pop() {
 							self.program_pointer = *self.brackets.get(&current_loop).unwrap();
@@ -349,7 +337,7 @@ impl Runner {
 					}
 				}
 				"?<" => {
-					let inactive_memory = (main_active_memory as isize - 1).abs() as usize;
+					let inactive_memory = main_active_memory ^ 1;
 					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] < main_memory[inactive_memory][main_memory_pointers[inactive_memory]] {
 						if let Some(current_loop) = self.loops.pop() {
 							self.program_pointer = *self.brackets.get(&current_loop).unwrap();
