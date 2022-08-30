@@ -1,3 +1,5 @@
+use crate::Utils;
+
 #[derive(Clone, Debug)]
 pub struct Warnings {
 	pub too_left_pointer: bool,
@@ -13,6 +15,7 @@ pub struct Flags {
 	pub debug_heavy: bool,
 	pub no_console: bool,
 	pub raw_code_to_run: Option<String>,
+	pub sebek: [Option<f64>; 3],
 	pub version: Option<String>,
 }
 
@@ -27,6 +30,7 @@ impl Flags {
 			debug_heavy: false,
 			no_console: false,
 			raw_code_to_run: None,
+			sebek: [None, None, None],
 			version: None,
 		}
 	}
@@ -51,6 +55,11 @@ impl Flags {
 				}
 				"--disable-warnings" => self.disabled_warnings = Warnings { too_left_pointer: true },
 				"--disable-too-left-pointer-warning" => self.disabled_warnings.too_left_pointer = true,
+				"--sebek" => {
+					if i + 1 < args_count {
+						self.sebek = Utils::parse_sebek(&args[i + 1]);
+					}
+				}
 				"-" => {
 					if self.raw_code_to_run.is_none() && i + 1 < args_count {
 						self.raw_code_to_run = Some(args[i + 1].clone());

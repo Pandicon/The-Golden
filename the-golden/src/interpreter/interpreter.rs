@@ -27,6 +27,9 @@ impl Interpreter {
 		} else {
 			String::from("latest")
 		};
+		if flags.sebek.iter().filter(|val| val.is_some()).collect::<Vec<&Option<f64>>>().is_empty() {
+			flags.sebek = preprocessor.sebek;
+		};
 		let versions_handler = versions_handler::Handler::new();
 		let parsed_version = versions_handler.parse_version(final_version, ansi_enabled);
 

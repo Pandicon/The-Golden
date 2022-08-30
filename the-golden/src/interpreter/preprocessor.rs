@@ -1,5 +1,7 @@
 use regex::Regex;
 
+use crate::Utils;
+
 #[derive(Clone, Debug)]
 pub struct Warnings {
 	pub too_left_pointer: bool,
@@ -10,6 +12,7 @@ pub struct Preprocessor {
 	pub disabled_warnings: Warnings,
 
 	pub no_console: bool,
+	pub sebek: [Option<f64>; 3],
 	pub version: Option<String>,
 }
 
@@ -19,6 +22,7 @@ impl Preprocessor {
 			disabled_warnings: Warnings { too_left_pointer: false },
 
 			no_console: false,
+			sebek: [None, None, None],
 			version: None,
 		}
 	}
@@ -36,7 +40,6 @@ impl Preprocessor {
 			if args.is_empty() {
 				continue;
 			}
-			println!("{args:?}");
 			let args_count = args.len();
 			match args[0].to_lowercase().as_str() {
 				"version" => {
@@ -63,9 +66,14 @@ impl Preprocessor {
 						_ => {}
 					}
 				}
+				"sebek" => {
+					if args_count < 2 {
+						continue;
+					}
+					self.sebek = Utils::parse_sebek(args[1]);
+				}
 				_ => {}
 			}
 		}
-		println!("{:?}", self);
 	}
 }
