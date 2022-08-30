@@ -1,5 +1,7 @@
 use crate::Flags;
 
+#[path = "./preprocessor.rs"]
+mod preprocessor;
 #[path = "./versions/handler.rs"]
 mod versions_handler;
 
@@ -14,14 +16,25 @@ pub struct Interpreter {
 }
 
 impl Interpreter {
-	pub fn new(mut version: String, code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool) -> Self {
+	pub fn new(version: Option<String>, code: String, code_path: std::path::PathBuf, mut flags: Flags, ansi_enabled: bool) -> Self {
+		let mut preprocessor = preprocessor::Preprocessor::new();
+		preprocessor.run(&code);
+		flags.no_console |= preprocessor.no_console;
+		let final_version = if let Some(ver) = version {
+			ver
+		} else if let Some(ver) = preprocessor.version {
+			ver
+		} else {
+			String::from("latest")
+		};
 		let versions_handler = versions_handler::Handler::new();
-		version = versions_handler.parse_version(version, ansi_enabled);
+		let parsed_version = versions_handler.parse_version(final_version, ansi_enabled);
+
 		Self {
 			flags,
 			ansi_enabled,
 			code,
-			version,
+			version: parsed_version,
 			versions_handler,
 			code_path,
 		}

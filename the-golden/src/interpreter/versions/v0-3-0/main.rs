@@ -46,32 +46,33 @@ pub struct Runner {
 impl Runner {
 	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool) -> Self {
 		let rules = vec![
-			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(),   // increment
-			Regex::new(r"^'?(\|-?[0-9]*\|)*~").unwrap(),   // decrement
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\+").unwrap(),  // add
-			Regex::new(r"^'?(\|-?[0-9]*\|)*-").unwrap(),   // subtract
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\*").unwrap(),  // multiply
-			Regex::new(r"^'?(\|-?[0-9]*\|)*/").unwrap(),   // divide
-			Regex::new(r"^'?`").unwrap(),                  // generate a random number from 0 (inclusive) to 1 (exclusive)
-			Regex::new(r"^'?(\|-?[0-9]*\|)*>").unwrap(),   // move right
-			Regex::new(r"^'?(\|-?[0-9]*\|)*<").unwrap(),   // move left
-			Regex::new(r"^'?_").unwrap(),                  // floor
-			Regex::new(r"^'?&").unwrap(),                  // ceil
-			Regex::new(r"^'?\^").unwrap(),                 // switch active memory
-			Regex::new(r"^'?\[@?").unwrap(),               // (do-)while start
-			Regex::new(r"^'?@?\]").unwrap(),               // (do-)while end
-			Regex::new(r"^'?\$\.").unwrap(),               // input number
-			Regex::new(r"^'?\$,").unwrap(),                // input character
-			Regex::new(r"^'?\\\.").unwrap(),               // output number
-			Regex::new(r"^'?\\,").unwrap(),                // output character
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\?=").unwrap(), // break if active memory address is equal to inactive memory address
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\?>").unwrap(), // break if active memory address is greater than inactive memory address
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\?<").unwrap(), // break if active memory address is less than inactive memory address
-			Regex::new(r"^'?\?\?").unwrap(),               // set current active memory address to its index
-			Regex::new(r"^'?;").unwrap(),                  // swap main and local memory addresses
-			Regex::new(r"^:\r?\n?").unwrap(),              // end of line
-			Regex::new("^\"[^\"]*\"").unwrap(),            // comments
-			Regex::new(r"^[ \t\f\v]").unwrap(),            // whitespace
+			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(),    // increment
+			Regex::new(r"^'?(\|-?[0-9]*\|)*~").unwrap(),    // decrement
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\+").unwrap(),   // add
+			Regex::new(r"^'?(\|-?[0-9]*\|)*-").unwrap(),    // subtract
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\*").unwrap(),   // multiply
+			Regex::new(r"^'?(\|-?[0-9]*\|)*/").unwrap(),    // divide
+			Regex::new(r"^'?`").unwrap(),                   // generate a random number from 0 (inclusive) to 1 (exclusive)
+			Regex::new(r"^'?(\|-?[0-9]*\|)*>").unwrap(),    // move right
+			Regex::new(r"^'?(\|-?[0-9]*\|)*<").unwrap(),    // move left
+			Regex::new(r"^'?_").unwrap(),                   // floor
+			Regex::new(r"^'?&").unwrap(),                   // ceil
+			Regex::new(r"^'?\^").unwrap(),                  // switch active memory
+			Regex::new(r"^'?\[@?").unwrap(),                // (do-)while start
+			Regex::new(r"^'?@?\]").unwrap(),                // (do-)while end
+			Regex::new(r"^'?\$\.").unwrap(),                // input number
+			Regex::new(r"^'?\$,").unwrap(),                 // input character
+			Regex::new(r"^'?\\\.").unwrap(),                // output number
+			Regex::new(r"^'?\\,").unwrap(),                 // output character
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\?=").unwrap(),  // break if active memory address is equal to inactive memory address
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\?>").unwrap(),  // break if active memory address is greater than inactive memory address
+			Regex::new(r"^'?(\|-?[0-9]*\|)*\?<").unwrap(),  // break if active memory address is less than inactive memory address
+			Regex::new(r"^'?\?\?").unwrap(),                // set current active memory address to its index
+			Regex::new(r"^'?;").unwrap(),                   // swap main and local memory addresses
+			Regex::new(r"^:\r?\n?").unwrap(),               // end of line
+			Regex::new("^\"[^\"]*\"").unwrap(),             // comments
+			Regex::new(r"^[ \t\f\v]").unwrap(),             // whitespace
+			Regex::new(crate::PREPROCESSOR_REGEX).unwrap(), //preprocessor regex
 		];
 		Self {
 			flags,
