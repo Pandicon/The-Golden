@@ -12,6 +12,7 @@ mod utils;
 pub use utils::Utils;
 
 pub const INFO_PREFIX_LENGTH: usize = 12;
+pub const PREPROCESSOR_REGEX: &str = "#[^:]*:\r?\n?";
 
 fn main() {
 	dotenv().ok();
@@ -26,7 +27,7 @@ fn main() {
 	flags_handler.parse(&args);
 
 	let mut _action = String::new();
-	let mut version = String::from("latest");
+	let mut version = None;
 	let mut code = String::new();
 	let mut code_path = std::path::PathBuf::new();
 
@@ -59,7 +60,7 @@ fn main() {
 		return;
 	}
 	if let Some(v) = cloned_flags.version {
-		version = v;
+		version = Some(v);
 	}
 	if let Ok(val) = env::var("LOGS") {
 		if val.to_lowercase() == "off" && cfg!(target_os = "windows") {

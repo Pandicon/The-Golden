@@ -10,8 +10,11 @@
 4. [Important notes](#important-notes)
 5. [Mechanics](#mechanics)
 6. [Syntax](#syntax)
-7. [Incoming features](#incoming-features)
-8. [Examples](#examples)
+7. [Preprocessor](#preprocessor)<br>
+   7.1 [Using it](#preprocessor-using-it)<br>
+   7.2 [Supported statements](#preprocessor-supported-statements)
+8. [Incoming features](#incoming-features)
+9. [Examples](#examples)
 
 ## Basic info <a name="basic-info"></a>
 
@@ -42,6 +45,7 @@ See the table below for some flags you can provide when running your code.
 | --disable-warnings | `--disable-warnings` | Disable all warnings |
 | --disable-too-left-pointer-warning | `--disable-too-left-pointer-warning` | Disable the warning fired when you go to the -1 index in memory |
 | --hide-console | `--hide-console` | Hide the console when running the code |
+| --sebek | `--sebek -1|0|1` | Specify the results for division by 0. First number is for dividing a number < 0, second for dividing 0 itself, and the third is for dividing a number > 0 |
 | --version | `--version 0.1.0` | Run the code using a specific version of the interpreter |
 
 ## Main features <a name="main-features"></a>
@@ -87,19 +91,8 @@ The magic of Brainfuck-like syntax is that it is easy and extremely difficult at
 | ~ | Subtracts one from the current cell | `~` | Yes | Yes |
 | + | Adds the cell in the inactive row to the cell in the active row | `+` | Yes | Yes |
 | - | Subtracts the cell in the inactive row from the cell in the active row | `-` | Yes | Yes |
-| * | Multiplies the cell in the active row by the cell in the inactive row | `*`| Yes | Yes |
-| / | Divides the cell in the active row by the cell in the inactive row |`/`| Yes | Yes |
-| _ | Floors the current cell value (towards -infinity) |`\_`| No | Yes |
-| & | Ceils the current cell value (towards +infinity) |`&`| No | Yes |
-| ` | Sets the cell to a random number from 0 (inclusive) to 1 (exclusive) | <code>`</code> | No | Yes |
-| > | Move the cell pointer one to the right | `>`| Yes | Yes |
-| < | Move the cell pointer one to the left |`<`| Yes | Yes |
-| ^ | Switch active memory (sets the active as inactive and the inactive as active) |`^`| No | Yes |
-| $. | Sets the cell to the value of user input as a number (if they input 69, the cell value will be 69) | `$.` | No | Yes |
-| $, | Sets the cell to the value of user input as a character (if they input E, the cell value will be 69) | `$,`| No | Yes |
-| \\. | Output the cell as a number (if the cell value is 69, 69 will be printed) |`\.`| No | Yes |
-| \\, | Output the cell as a character (if the cell value is 69, E will be printed) |`\,`| No | Yes |
-| [ | Start a while loop |`[` | No | Yes |
+| _ | Multiplies the cell in the active row by the cell in the inactive row | `_`| Yes | Yes | | / | Divides the cell in the active row by the cell in the inactive row |`/`| Yes | Yes | | _ | Floors the current cell value (towards -infinity) |`\_`| No | Yes | | & | Ceils the current cell value (towards +infinity) |`&`| No | Yes | | ` | Sets the cell to a random number from 0 (inclusive) to 1 (exclusive) | <code>`</code> | No | Yes | | > | Move the cell pointer one to the right | `>`| Yes | Yes | | < | Move the cell pointer one to the left |`<`| Yes | Yes | | ^ | Switch active memory (sets the active as inactive and the inactive as active) |`^`| No | Yes | | $. | Sets the cell to the value of user input as a number (if they input 69, the cell value will be 69) | `$.` | No | Yes |
+| $, | Sets the cell to the value of user input as a character (if they input E, the cell value will be 69) | `$,`| No | Yes | | \\. | Output the cell as a number (if the cell value is 69, 69 will be printed) |`\.`| No | Yes | | \\, | Output the cell as a character (if the cell value is 69, E will be printed) |`\,`| No | Yes | | [ | Start a while loop |`[` | No | Yes |
 | ] | End a while loop | `]` | No | Yes |
 | [@ | Start a do-while loop | `[@` | No | Yes |
 | @] | End a do-while loop | `@]` | No | Yes |
@@ -111,6 +104,26 @@ The magic of Brainfuck-like syntax is that it is easy and extremely difficult at
 | "" | Comments | `"This is a comment"` | No | No |
 
 Each line has to end with a punctuation (`:`) or else the program will crash.
+
+## Preprocessor <a name="preprocessor"></a>
+
+The preprocessor allows you to include flags into the code itself, so you don't have to rely on the user to run the code with the correct flags.<br>
+The values parsed by the preprocessor are overridden by the flags passed in from the command line.
+
+### Using it <a name="preprocessor-using-it"></a>
+
+The statements are put into the code file and begin with a `#`.
+
+### Supported statements <a name="preprocessor-supported-statements"></a>
+
+Statement names are case-insensitive, so `version` is the same as `VERSION` and `VerSIoN`. However, this may not be true for other parts of the statement.
+
+| Statement          | Aliases                               | Arguments                                                                                                                       | Explanation                                        | Example                              |
+| :----------------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------- | :----------------------------------- |
+| `version`          | None                                  | None                                                                                                                            | Specifies the version of the interpreter to launch | `#version 0.3.0`                     |
+| `no-console`       | `noconsole`, `no_console`             | None                                                                                                                            | Hides the console when running the code            | `#no-console`                        |
+| `disable-warnings` | `disablewarnings`, `disable_warnings` | The warning to disable: `too-left-pointer` (`tooleftpointer`)                                                                   | Disables the specified warning                     | `#disable-warnings too-left-pointer` |
+| `sebek`            | None                                  | The results of division by zero for negative numbers (`<n>`), zero itself (`<z>`), and positive numbers (`<p>`), separated by `\|`: `<n>\|<z>\|<p>` | Sets the result of division by zero to the specified number depending on the value of the number being divided | `sebek -1\|0\|1` (if a negative number was divided by 0 the result would be -1, if 0 was divided by 0 the result would be 0, and if a positive number was divided by 0 the result would be 1) |
 
 ## Incoming features <a name="incoming-features"></a>
 

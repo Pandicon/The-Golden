@@ -4,6 +4,8 @@ use crate::Flags;
 mod v0_1_0;
 #[path = "./v0-2-0/main.rs"]
 mod v0_2_0;
+#[path = "./v0-3-0/main.rs"]
+mod v0_3_0;
 
 pub struct Handler {
 	versions: Versions,
@@ -16,6 +18,7 @@ impl Handler {
 			vec![
 				Version::new(String::from("1"), vec![Version::new(String::from("0"), vec![])]),
 				Version::new(String::from("2"), vec![Version::new(String::from("0"), vec![])]),
+				Version::new(String::from("3"), vec![Version::new(String::from("0"), vec![])]),
 			],
 		);
 		let versions = Versions::new(vec![versions_0]);
@@ -32,13 +35,13 @@ impl Handler {
 		for _ in 0..3 - parts.len() {
 			parts.push(String::from("x"));
 		}
-		let s = parts[2].split("-").map(|x| x.to_string()).collect::<Vec<String>>();
+		let s = parts[2].split('-').map(|x| x.to_string()).collect::<Vec<String>>();
 		let (parts, prerelease, _build_metadata) = if s.len() > 1 {
 			let s_joined = s[1..].join("-");
 			let p = s_joined.clone();
-			let s2 = p.split("+").map(|x| x.to_string()).collect::<Vec<String>>();
+			let s2 = p.split('+').map(|x| x.to_string()).collect::<Vec<String>>();
 			if s2.len() > 1 {
-				(vec![parts[0].clone(), parts[1].clone(), s[0].clone()], Some(s2[0].clone()), Some(s2[1..].join("+").clone()))
+				(vec![parts[0].clone(), parts[1].clone(), s[0].clone()], Some(s2[0].clone()), Some(s2[1..].join("+")))
 			} else {
 				(vec![parts[0].clone(), parts[1].clone(), s[0].clone()], Some(s_joined), None)
 			}
@@ -118,13 +121,18 @@ impl Handler {
 				};
 				v0_2_0::Runner::new(code, code_path, flags, ansi_enabled).run()
 			}
+			"0.3.0" => {
+				if flags.debug {
+					println!("{}Running version 0.3.0", crate::Utils::ansi_escape_text("94", "DEBUG", v0_3_0::INFO_PREFIX_LENGTH, ansi_enabled));
+				};
+				v0_3_0::Runner::new(code, code_path, flags, ansi_enabled).run()
+			}
 			_ => {
 				println!(
 					"{}Couldn't run version {}",
 					crate::Utils::ansi_escape_text("91", "ERROR", v0_1_0::INFO_PREFIX_LENGTH, ansi_enabled),
 					version
 				);
-				return;
 			}
 		}
 	}
