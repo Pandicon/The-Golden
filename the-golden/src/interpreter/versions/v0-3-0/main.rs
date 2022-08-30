@@ -229,7 +229,30 @@ impl Runner {
 				"+" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] += main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
 				"-" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] -= main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
 				"*" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] *= main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
-				"/" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] /= main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]],
+				"/" => {
+					let divisor = main_memory[main_active_memory ^ 1][main_memory_pointers[main_active_memory ^ 1]];
+					let divident = &mut main_memory[main_active_memory][main_memory_pointers[main_active_memory]];
+					if divisor == 0.0 {
+						let mut i = 0;
+						if *divident >= 0.0 {
+							i += 1;
+						}
+						if *divident > 0.0 {
+							i += 1;
+						}
+						let val = self.flags.sebek[i];
+						if let Some(res) = val {
+							*divident = res;
+						} else {
+							return Err(format!(
+								"Mr. Sebek would support you. Attempted division by 0 for {}. You can set up custom values for division by 0 with the --sebek flag.",
+								divident
+							));
+						}
+					} else {
+						*divident /= divisor
+					}
+				}
 				"`" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = rand::thread_rng().gen(),
 				">" => {
 					main_memory_pointers[main_active_memory] += 1;
