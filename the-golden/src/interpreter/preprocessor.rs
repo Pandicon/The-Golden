@@ -48,14 +48,14 @@ impl Preprocessor {
 					}
 					self.version = Some(args[1].to_string());
 				}
-				"noconsole" | "no-console" => {
+				"noconsole" | "no-console" | "no_console" => {
 					if args_count < 2 {
 						self.no_console = true;
 						continue;
 					}
 					self.no_console = args[1].to_lowercase() != "false";
 				}
-				"disablewarnings" | "disable-warnings" => {
+				"disablewarnings" | "disable-warnings" | "disable_warnings" => {
 					if args_count < 2 {
 						continue;
 					}
