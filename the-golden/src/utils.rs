@@ -33,7 +33,7 @@ impl Utils {
 
 	pub fn parse_sebek(input: &str) -> [Option<f64>; 3] {
 		let mut sebek = [None, None, None];
-		let args_vec = input.split("|").filter_map(|val| val.parse::<f64>().ok()).collect::<Vec<f64>>();
+		let args_vec = input.split('|').filter_map(|val| val.parse::<f64>().ok()).collect::<Vec<f64>>();
 		for (i, &val) in args_vec.iter().enumerate() {
 			if i >= sebek.len() {
 				break;
