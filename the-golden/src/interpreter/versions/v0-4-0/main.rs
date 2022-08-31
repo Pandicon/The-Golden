@@ -60,16 +60,16 @@ impl Runner {
 			Regex::new(r"^'?\^").unwrap(),                  // switch active memory
 			Regex::new(r"^'?\[@?").unwrap(),                // (do-)while start
 			Regex::new(r"^'?@?\]").unwrap(),                // (do-)while end
-			Regex::new(r"^'?\$\.").unwrap(),                // input number
-			Regex::new(r"^'?\$,").unwrap(),                 // input character
-			Regex::new(r"^'?\\\.").unwrap(),                // output number
-			Regex::new(r"^'?\\,").unwrap(),                 // output character
+			Regex::new(r"^'?\$,").unwrap(),                 // input number
+			Regex::new(r"^'?,").unwrap(),                   // input character
+			Regex::new(r"^'?\$\.").unwrap(),                // output number
+			Regex::new(r"^'?\.").unwrap(),                  // output character
 			Regex::new(r"^'?(\|-?[0-9]*\|)*\?=").unwrap(),  // break if active memory address is equal to inactive memory address
 			Regex::new(r"^'?(\|-?[0-9]*\|)*\?>").unwrap(),  // break if active memory address is greater than inactive memory address
 			Regex::new(r"^'?(\|-?[0-9]*\|)*\?<").unwrap(),  // break if active memory address is less than inactive memory address
 			Regex::new(r"^'?\?\?").unwrap(),                // set current active memory address to its index
 			Regex::new(r"^'?;").unwrap(),                   // swap main and local memory addresses
-			Regex::new(r"^:\r?\n?").unwrap(),               // end of line
+			Regex::new(r"^(:|:?\r?\n)").unwrap(),           // end of line
 			Regex::new("^\"[^\"]*\"").unwrap(),             // comments
 			Regex::new(r"^[ \t\f\v]").unwrap(),             // whitespace
 			Regex::new(crate::PREPROCESSOR_REGEX).unwrap(), //preprocessor regex
@@ -160,6 +160,10 @@ impl Runner {
 			println!("{}----- START OF CODE EXECUTION -----", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
 		}
 		let mut local_memory: [Vec<f64>; 2] = [vec![0.0], vec![0.0]];
+		if !self.flags.no_brainfuck {
+			self.memory[1][0] = 1.0;
+			local_memory[1][0] = 1.0;
+		}
 		let mut local_memory_pointers: [usize; 2] = [0, 0];
 		let mut active_local_memory: usize = 0;
 		let program_length = parser.commands.len();
@@ -273,7 +277,7 @@ impl Runner {
 				"_" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor(),
 				"&" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].ceil(),
 				"^" => main_active_memory ^= 1,
-				"$." => {
+				"$," => {
 					if self.input_cache.is_none() {
 						self.input_cache = Some(Utils::get_input_line());
 					}
@@ -286,7 +290,7 @@ impl Runner {
 						}
 					}
 				}
-				"$," => {
+				"," => {
 					if self.input_cache.is_none() {
 						self.input_cache = Some(Utils::get_input_line());
 					}
@@ -295,13 +299,13 @@ impl Runner {
 					self.input_cache = if !remainder.is_empty() { Some(remainder.to_string()) } else { None };
 					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = (char as u32) as f64;
 				}
-				"\\." => {
+				"$." => {
 					print!("{}", main_memory[main_active_memory][main_memory_pointers[main_active_memory]]);
 					if let Err(e) = Utils::flush_console() {
 						println!("{}{}", Utils::ansi_escape_text("91", "ERROR", INFO_PREFIX_LENGTH, self.ansi_enabled), e);
 					}
 				}
-				"\\," => match char::from_u32(main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor() as u32) {
+				"." => match char::from_u32(main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor() as u32) {
 					Some(c) => {
 						print!("{}", c);
 						if let Err(e) = Utils::flush_console() {

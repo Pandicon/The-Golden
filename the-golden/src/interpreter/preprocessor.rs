@@ -38,6 +38,9 @@ impl Preprocessor {
 			if statement.ends_with(':') {
 				statement_chars.next_back();
 			}
+			if statement.ends_with('#') {
+				statement_chars.next_back();
+			}
 			let args = statement_chars.as_str().split(' ').collect::<Vec<&str>>();
 			if args.is_empty() {
 				continue;
