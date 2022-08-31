@@ -19,6 +19,7 @@ impl Interpreter {
 	pub fn new(version: Option<String>, code: String, code_path: std::path::PathBuf, mut flags: Flags, ansi_enabled: bool) -> Self {
 		let mut preprocessor = preprocessor::Preprocessor::new();
 		preprocessor.run(&code);
+		flags.no_brainfuck |= preprocessor.no_brainfuck;
 		flags.no_console |= preprocessor.no_console;
 		let final_version = if let Some(ver) = version {
 			ver
@@ -30,6 +31,7 @@ impl Interpreter {
 		if !flags.sebek.iter().any(|val| val.is_some()) {
 			flags.sebek = preprocessor.sebek;
 		};
+		println!("{:?}", flags);
 		let versions_handler = versions_handler::Handler::new();
 		let parsed_version = versions_handler.parse_version(final_version, ansi_enabled);
 

@@ -13,6 +13,7 @@ pub struct Flags {
 	pub code_path: Option<std::path::PathBuf>,
 	pub debug: bool,
 	pub debug_heavy: bool,
+	pub no_brainfuck: bool,
 	pub no_console: bool,
 	pub raw_code_to_run: Option<String>,
 	pub sebek: [Option<f64>; 3],
@@ -28,6 +29,7 @@ impl Flags {
 			code_path: None,
 			debug: false,
 			debug_heavy: false,
+			no_brainfuck: false,
 			no_console: false,
 			raw_code_to_run: None,
 			sebek: [None, None, None],
@@ -55,6 +57,7 @@ impl Flags {
 				}
 				"--disable-warnings" => self.disabled_warnings = Warnings { too_left_pointer: true },
 				"--disable-too-left-pointer-warning" => self.disabled_warnings.too_left_pointer = true,
+				"--no-brainfuck" => self.no_brainfuck = true,
 				"--sebek" => {
 					if i + 1 < args_count {
 						self.sebek = Utils::parse_sebek(&args[i + 1]);
