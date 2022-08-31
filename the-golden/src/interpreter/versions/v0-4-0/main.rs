@@ -35,6 +35,7 @@ pub struct Runner {
 
 	program_pointer: usize,
 
+	on_local: bool,
 	loops: Vec<usize>,
 	memory: [Vec<f64>; 2],
 	memory_pointers: [usize; 2],
@@ -46,29 +47,30 @@ pub struct Runner {
 impl Runner {
 	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool) -> Self {
 		let rules = vec![
-			Regex::new(r"^'?(\|-?[0-9]*\|)*!").unwrap(),    // increment
-			Regex::new(r"^'?(\|-?[0-9]*\|)*~").unwrap(),    // decrement
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\+").unwrap(),   // add
-			Regex::new(r"^'?(\|-?[0-9]*\|)*-").unwrap(),    // subtract
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\*").unwrap(),   // multiply
-			Regex::new(r"^'?(\|-?[0-9]*\|)*/").unwrap(),    // divide
-			Regex::new(r"^'?`").unwrap(),                   // generate a random number from 0 (inclusive) to 1 (exclusive)
-			Regex::new(r"^'?(\|-?[0-9]*\|)*>").unwrap(),    // move right
-			Regex::new(r"^'?(\|-?[0-9]*\|)*<").unwrap(),    // move left
-			Regex::new(r"^'?_").unwrap(),                   // floor
-			Regex::new(r"^'?&").unwrap(),                   // ceil
-			Regex::new(r"^'?\^").unwrap(),                  // switch active memory
-			Regex::new(r"^'?\[@?").unwrap(),                // (do-)while start
-			Regex::new(r"^'?@?\]").unwrap(),                // (do-)while end
-			Regex::new(r"^'?\$,").unwrap(),                 // input number
-			Regex::new(r"^'?,").unwrap(),                   // input character
-			Regex::new(r"^'?\$\.").unwrap(),                // output number
-			Regex::new(r"^'?\.").unwrap(),                  // output character
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\?=").unwrap(),  // break if active memory address is equal to inactive memory address
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\?>").unwrap(),  // break if active memory address is greater than inactive memory address
-			Regex::new(r"^'?(\|-?[0-9]*\|)*\?<").unwrap(),  // break if active memory address is less than inactive memory address
-			Regex::new(r"^'?\?\?").unwrap(),                // set current active memory address to its index
-			Regex::new(r"^'?;").unwrap(),                   // swap main and local memory addresses
+			Regex::new(r"^(\|-?[0-9]*\|)*!").unwrap(),      // increment
+			Regex::new(r"^(\|-?[0-9]*\|)*~").unwrap(),      // decrement
+			Regex::new(r"^(\|-?[0-9]*\|)*\+").unwrap(),     // add
+			Regex::new(r"^(\|-?[0-9]*\|)*-").unwrap(),      // subtract
+			Regex::new(r"^(\|-?[0-9]*\|)*\*").unwrap(),     // multiply
+			Regex::new(r"^(\|-?[0-9]*\|)*/").unwrap(),      // divide
+			Regex::new(r"^`").unwrap(),                     // generate a random number from 0 (inclusive) to 1 (exclusive)
+			Regex::new(r"^(\|-?[0-9]*\|)*>").unwrap(),      // move right
+			Regex::new(r"^(\|-?[0-9]*\|)*<").unwrap(),      // move left
+			Regex::new(r"^_").unwrap(),                     // floor
+			Regex::new(r"^&").unwrap(),                     // ceil
+			Regex::new(r"^'").unwrap(),                     // switch between local and global memory
+			Regex::new(r"^\^").unwrap(),                    // switch active memory
+			Regex::new(r"^\[@?").unwrap(),                  // (do-)while start
+			Regex::new(r"^@?\]").unwrap(),                  // (do-)while end
+			Regex::new(r"^\$,").unwrap(),                   // input number
+			Regex::new(r"^,").unwrap(),                     // input character
+			Regex::new(r"^\$\.").unwrap(),                  // output number
+			Regex::new(r"^\.").unwrap(),                    // output character
+			Regex::new(r"^(\|-?[0-9]*\|)*\?=").unwrap(),    // break if active memory address is equal to inactive memory address
+			Regex::new(r"^(\|-?[0-9]*\|)*\?>").unwrap(),    // break if active memory address is greater than inactive memory address
+			Regex::new(r"^(\|-?[0-9]*\|)*\?<").unwrap(),    // break if active memory address is less than inactive memory address
+			Regex::new(r"^\?\?").unwrap(),                  // set current active memory address to its index
+			Regex::new(r"^;").unwrap(),                     // swap main and local memory addresses
 			Regex::new(r"^(:|:?\r?\n)").unwrap(),           // end of line
 			Regex::new("^\"[^\"]*\"").unwrap(),             // comments
 			Regex::new(r"^[ \t\f\v]").unwrap(),             // whitespace
@@ -99,6 +101,7 @@ impl Runner {
 
 			program_pointer: 0,
 
+			on_local: false,
 			loops: vec![],
 			memory: [vec![0.0], vec![0.0]],
 			memory_pointers: [0, 0],
@@ -189,9 +192,8 @@ impl Runner {
 	}
 
 	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> Result<usize, String> {
-		let is_local = command.starts_with('\'');
+		let is_local = self.on_local;
 		let raw_command = command;
-		let command = if is_local { &command[1..] } else { command };
 		let [(main_memory, main_memory_pointers, mut main_active_memory), (local_memory, local_memory_pointers, local_active_memory)] = if is_local {
 			[
 				(local_memory, local_memory_pointers, active_local_memory),
@@ -257,6 +259,7 @@ impl Runner {
 						*divident /= divisor
 					}
 				}
+				"'" => self.on_local = !self.on_local,
 				"`" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = rand::thread_rng().gen(),
 				">" => {
 					main_memory_pointers[main_active_memory] += 1;
