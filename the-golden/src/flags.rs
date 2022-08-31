@@ -20,6 +20,12 @@ pub struct Flags {
 	pub version: Option<String>,
 }
 
+impl Default for Flags {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
 impl Flags {
 	pub fn new() -> Self {
 		Self {

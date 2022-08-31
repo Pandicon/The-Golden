@@ -84,19 +84,19 @@ impl Handler {
 			}
 			version_parsed.push(current_subversion.value.clone());
 		}
-		let prerelease = if prerelease.is_some() && !current_subversion.sub.is_empty() {
-			let ver = prerelease.unwrap();
-			let mut to_return: Option<&Version> = None;
-			for subversion in &current_subversion.sub {
-				if subversion.value == ver {
-					to_return = Some(subversion);
-					break;
+		let prerelease = match (prerelease, !current_subversion.sub.is_empty()) {
+			(Some(ver), true) => {
+				let mut to_return: Option<&Version> = None;
+				for subversion in &current_subversion.sub {
+					if subversion.value == ver {
+						to_return = Some(subversion);
+						break;
+					}
 				}
+				current_subversion = if let Some(to_return) = to_return { to_return } else { current_subversion.sub.last().unwrap() };
+				format!("-{}", current_subversion.value.clone())
 			}
-			current_subversion = if let Some(to_return) = to_return { to_return } else { current_subversion.sub.last().unwrap() };
-			format!("-{}", current_subversion.value.clone())
-		} else {
-			String::new()
+			_ => String::new(),
 		};
 		let version_final = format!("{}{}", version_parsed.join("."), prerelease);
 		if version_original != version_final && version_original.to_lowercase() != "latest" {
