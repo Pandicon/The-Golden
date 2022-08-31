@@ -50,7 +50,7 @@ impl Lexer {
 					self.position += command_length;
 					if command.contains('\n') {
 						self.line += command.matches('\n').count();
-						self.column += command.split('\n').last().unwrap().len();
+						self.column = command.split('\n').last().unwrap().len() + 1;
 					} else {
 						self.column += command_length;
 					}
