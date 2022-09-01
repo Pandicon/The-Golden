@@ -64,8 +64,8 @@ impl Runner {
 			Regex::new(r"^@?\]").unwrap(),                  // (do-)while end
 			Regex::new(r"^\$,").unwrap(),                   // input number
 			Regex::new(r"^,").unwrap(),                     // input character
-			Regex::new(r"^\$\.").unwrap(),                  // output number
-			Regex::new(r"^\.").unwrap(),                    // output character
+			Regex::new(r"^(\|-?[0-9]*\|)*\$\.").unwrap(),   // output number
+			Regex::new(r"^(\|-?[0-9]*\|)*\.").unwrap(),     // output character
 			Regex::new(r"^(\|-?[0-9]*\|)*\?=").unwrap(),    // break if active memory address is equal to inactive memory address
 			Regex::new(r"^(\|-?[0-9]*\|)*\?>").unwrap(),    // break if active memory address is greater than inactive memory address
 			Regex::new(r"^(\|-?[0-9]*\|)*\?<").unwrap(),    // break if active memory address is less than inactive memory address
