@@ -1,6 +1,9 @@
 use dotenv::dotenv;
 use std::env;
 
+#[path = "./configuration/handler.rs"]
+mod configuration_handler;
+pub use configuration_handler::ConfigHandler;
 #[path = "./flags.rs"]
 mod flags;
 pub use flags::Flags;
@@ -10,6 +13,8 @@ use interpreter::Interpreter;
 #[path = "./utils.rs"]
 mod utils;
 pub use utils::Utils;
+
+const COMMANDS_CONFIG: &str = include_str!("configuration/commands.json");
 
 pub const INFO_PREFIX_LENGTH: usize = 12;
 pub const PREPROCESSOR_REGEX: &str = "#[^#\r\n]*(#|#?\r?\n)";
@@ -22,6 +27,11 @@ fn main() {
 	tracing_subscriber::fmt::init();
 	let ansi_enabled = enable_ansi_support::enable_ansi_support().is_ok();
 	let args: Vec<String> = std::env::args().collect();
+
+	let _config_handler = match ConfigHandler::new(ansi_enabled, COMMANDS_CONFIG) {
+		Some(val) => val,
+		None => return,
+	};
 
 	let mut flags_handler = Flags::new();
 	flags_handler.parse(&args);
