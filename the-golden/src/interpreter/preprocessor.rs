@@ -11,6 +11,7 @@ pub struct Warnings {
 pub struct Preprocessor {
 	pub disabled_warnings: Warnings,
 
+	pub no_brainfuck: bool,
 	pub no_console: bool,
 	pub sebek: [Option<f64>; 3],
 	pub version: Option<String>,
@@ -21,6 +22,7 @@ impl Preprocessor {
 		Self {
 			disabled_warnings: Warnings { too_left_pointer: false },
 
+			no_brainfuck: false,
 			no_console: false,
 			sebek: [None, None, None],
 			version: None,
@@ -36,6 +38,9 @@ impl Preprocessor {
 			if statement.ends_with(':') {
 				statement_chars.next_back();
 			}
+			if statement.ends_with('#') {
+				statement_chars.next_back();
+			}
 			let args = statement_chars.as_str().split(' ').collect::<Vec<&str>>();
 			if args.is_empty() {
 				continue;
@@ -48,6 +53,7 @@ impl Preprocessor {
 					}
 					self.version = Some(args[1].to_string());
 				}
+				"nobrainfuck" | "no-brainfuck" | "no_brainfuck" => self.no_brainfuck = true,
 				"noconsole" | "no-console" | "no_console" => {
 					if args_count < 2 {
 						self.no_console = true;

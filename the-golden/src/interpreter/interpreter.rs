@@ -19,6 +19,7 @@ impl Interpreter {
 	pub fn new(version: Option<String>, code: String, code_path: std::path::PathBuf, mut flags: Flags, ansi_enabled: bool) -> Self {
 		let mut preprocessor = preprocessor::Preprocessor::new();
 		preprocessor.run(&code);
+		flags.no_brainfuck |= preprocessor.no_brainfuck;
 		flags.no_console |= preprocessor.no_console;
 		let final_version = if let Some(ver) = version {
 			ver

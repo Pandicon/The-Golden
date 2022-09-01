@@ -12,7 +12,7 @@ mod utils;
 pub use utils::Utils;
 
 pub const INFO_PREFIX_LENGTH: usize = 12;
-pub const PREPROCESSOR_REGEX: &str = "#[^:]*:\r?\n?";
+pub const PREPROCESSOR_REGEX: &str = "#[^#\r\n]*(#|#?\r?\n)";
 
 fn main() {
 	dotenv().ok();
