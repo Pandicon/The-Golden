@@ -9,7 +9,7 @@ pub struct ConfigHandler {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CommandsConfig {
-	pub v0_1_0: VersionCommandsConfig,
+	pub version_commands_configs: std::collections::HashMap<String, VersionCommandsConfig>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
