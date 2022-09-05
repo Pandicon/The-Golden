@@ -2,24 +2,24 @@ use serde::{Deserialize, Serialize};
 
 use crate::Utils;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ConfigHandler {
 	pub commands: CommandsConfig,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct CommandsConfig {
 	pub version_commands_configs: std::collections::HashMap<String, VersionCommandsConfig>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct VersionCommandsConfig {
 	pub chain_regex: String,
 	pub local_regex: String,
 	pub commands: Vec<CommandConfig>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct CommandConfig {
 	pub command: String,
 	pub regex: String,

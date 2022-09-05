@@ -1,4 +1,4 @@
-use crate::Flags;
+use crate::{ConfigHandler, Flags};
 
 #[path = "./preprocessor.rs"]
 mod preprocessor;
@@ -13,10 +13,11 @@ pub struct Interpreter {
 	versions_handler: versions_handler::Handler,
 	code: String,
 	code_path: std::path::PathBuf,
+	config_handler: ConfigHandler,
 }
 
 impl Interpreter {
-	pub fn new(version: Option<String>, code: String, code_path: std::path::PathBuf, mut flags: Flags, ansi_enabled: bool) -> Self {
+	pub fn new(version: Option<String>, code: String, code_path: std::path::PathBuf, mut flags: Flags, ansi_enabled: bool, config_handler: ConfigHandler) -> Self {
 		let mut preprocessor = preprocessor::Preprocessor::new();
 		preprocessor.run(&code);
 		flags.no_brainfuck |= preprocessor.no_brainfuck;
@@ -38,6 +39,7 @@ impl Interpreter {
 			flags,
 			ansi_enabled,
 			code,
+			config_handler,
 			version: parsed_version,
 			versions_handler,
 			code_path,
@@ -45,7 +47,13 @@ impl Interpreter {
 	}
 
 	pub fn run(&self) {
-		self.versions_handler
-			.run(self.version.clone(), self.code.clone(), self.code_path.clone(), self.flags.clone(), self.ansi_enabled);
+		self.versions_handler.run(
+			self.version.clone(),
+			self.code.clone(),
+			self.code_path.clone(),
+			self.flags.clone(),
+			self.ansi_enabled,
+			self.config_handler.clone(),
+		);
 	}
 }

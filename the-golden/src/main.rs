@@ -3,7 +3,7 @@ use std::env;
 
 #[path = "./configuration/handler.rs"]
 mod configuration_handler;
-pub use configuration_handler::ConfigHandler;
+pub use configuration_handler::{ConfigHandler, VersionCommandsConfig};
 #[path = "./flags.rs"]
 mod flags;
 pub use flags::Flags;
@@ -28,7 +28,7 @@ fn main() {
 	let ansi_enabled = enable_ansi_support::enable_ansi_support().is_ok();
 	let args: Vec<String> = std::env::args().collect();
 
-	let _config_handler = match ConfigHandler::new(ansi_enabled, COMMANDS_CONFIG) {
+	let config_handler = match ConfigHandler::new(ansi_enabled, COMMANDS_CONFIG) {
 		Some(val) => val,
 		None => return,
 	};
@@ -80,5 +80,5 @@ fn main() {
 	if cloned_flags.no_console && cfg!(target_os = "windows") {
 		winconsole::window::hide();
 	}
-	Interpreter::new(version, code, code_path, flags_handler, ansi_enabled).run();
+	Interpreter::new(version, code, code_path, flags_handler, ansi_enabled, config_handler).run();
 }

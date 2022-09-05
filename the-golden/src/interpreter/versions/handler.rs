@@ -1,4 +1,4 @@
-use crate::Flags;
+use crate::{ConfigHandler, Flags};
 
 #[path = "./v0-1-0/main.rs"]
 mod v0_1_0;
@@ -8,6 +8,8 @@ mod v0_2_0;
 mod v0_3_0;
 #[path = "./v0-4-0/main.rs"]
 mod v0_4_0;
+#[path = "./v0-5-0/main.rs"]
+mod v0_5_0;
 
 pub struct Handler {
 	versions: Versions,
@@ -110,7 +112,7 @@ impl Handler {
 		version_final
 	}
 
-	pub fn run(&self, version: String, code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool) {
+	pub fn run(&self, version: String, code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool, config_handler: ConfigHandler) {
 		match version.as_str() {
 			"0.1.0" => {
 				if flags.debug {
@@ -135,6 +137,23 @@ impl Handler {
 					println!("{}Running version {}", crate::Utils::ansi_escape_text("94", "DEBUG", v0_4_0::INFO_PREFIX_LENGTH, ansi_enabled), version);
 				};
 				v0_4_0::Runner::new(code, code_path, flags, ansi_enabled).run()
+			}
+			"0.5.0" => {
+				if flags.debug {
+					println!("{}Running version {}", crate::Utils::ansi_escape_text("94", "DEBUG", v0_5_0::INFO_PREFIX_LENGTH, ansi_enabled), version);
+				};
+				let version_commands = match config_handler.commands.version_commands_configs.get(&version) {
+					Some(commands) => commands.clone(),
+					None => {
+						println!(
+							"{}Couldn't get commands for version {}",
+							crate::Utils::ansi_escape_text("91", "ERROR", v0_5_0::INFO_PREFIX_LENGTH, ansi_enabled),
+							version
+						);
+						return;
+					}
+				};
+				v0_5_0::Runner::new(code, code_path, flags, ansi_enabled, version_commands).run()
 			}
 			_ => {
 				println!(
