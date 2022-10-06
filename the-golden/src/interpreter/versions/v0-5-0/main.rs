@@ -268,7 +268,7 @@ impl Runner {
 				"_" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].floor(),
 				"&" => main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = main_memory[main_active_memory][main_memory_pointers[main_active_memory]].ceil(),
 				"^" => main_active_memory ^= 1,
-				"$," => {
+				"$," | "?$," => {
 					if self.input_cache.is_none() {
 						self.input_cache = Some(Utils::get_input_line());
 					}
@@ -280,7 +280,14 @@ impl Runner {
 					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = match numeric_part.parse::<f64>() {
 						Ok(val) => val,
 						Err(e) => {
-							return Err(format!("Failed to convert {:?} from input to a number: {}", numeric_part, e));
+							if command.starts_with('?') {
+								if let Some(current_loop) = self.loops.pop() {
+									self.program_pointer = *self.brackets.get(&current_loop).unwrap();
+								}
+								main_memory[main_active_memory][main_memory_pointers[main_active_memory]]
+							} else {
+								return Err(format!("Failed to convert {:?} from input to a number: {}", numeric_part, e));
+							}
 						}
 					}
 				}
