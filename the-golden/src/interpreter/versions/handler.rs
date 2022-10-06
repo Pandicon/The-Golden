@@ -24,6 +24,7 @@ impl Handler {
 				Version::new(String::from("2"), vec![Version::new(String::from("0"), vec![])]),
 				Version::new(String::from("3"), vec![Version::new(String::from("0"), vec![])]),
 				Version::new(String::from("4"), vec![Version::new(String::from("0"), vec![])]),
+				Version::new(String::from("5"), vec![Version::new(String::from("0"), vec![])]),
 			],
 		);
 		let versions = Versions::new(vec![versions_0]);
