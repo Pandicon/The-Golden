@@ -46,25 +46,103 @@ impl Utils {
 	pub fn numeric_part_end(input: &str) -> usize {
 		let mut i = 0;
 		let mut period = false;
-		let input = if input.starts_with('-') {
+		let (input, negative) = if input.starts_with('-') {
 			i = 1;
-			&input[1..]
+			(&input[1..], true)
 		} else {
-			input
+			(input, false)
 		};
 		for char in input.chars() {
 			match char {
 				'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {}
 				'.' => {
 					if period {
-						return i;
+						break;
 					}
 					period = true;
 				}
-				_ => return i,
+				_ => break,
 			}
 			i += 1;
 		}
+		if negative && i == 1 {
+			i -= 1;
+		}
 		i
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn integer() {
+		assert_eq!(Utils::numeric_part_end("1"), 1)
+	}
+
+	#[test]
+	fn float() {
+		assert_eq!(Utils::numeric_part_end("1.1"), 3)
+	}
+
+	#[test]
+	fn float_period() {
+		assert_eq!(Utils::numeric_part_end(".1"), 2)
+	}
+
+	#[test]
+	fn float_longer() {
+		assert_eq!(Utils::numeric_part_end("12.154"), 6)
+	}
+
+	#[test]
+	fn integer_invalid_suffix() {
+		assert_eq!(Utils::numeric_part_end("1a"), 1)
+	}
+
+	#[test]
+	fn float_invalid_suffix() {
+		assert_eq!(Utils::numeric_part_end("1.1a"), 3)
+	}
+
+	#[test]
+	fn negative_integer() {
+		assert_eq!(Utils::numeric_part_end("-1"), 2)
+	}
+
+	#[test]
+	fn negative_float() {
+		assert_eq!(Utils::numeric_part_end("-1.1"), 4)
+	}
+
+	#[test]
+	fn negative_float_period() {
+		assert_eq!(Utils::numeric_part_end("-.1"), 3)
+	}
+
+	#[test]
+	fn negative_float_longer() {
+		assert_eq!(Utils::numeric_part_end("-12.154"), 7)
+	}
+
+	#[test]
+	fn negative_integer_invalid_suffix() {
+		assert_eq!(Utils::numeric_part_end("-1a"), 2)
+	}
+
+	#[test]
+	fn negative_float_invalid_suffix() {
+		assert_eq!(Utils::numeric_part_end("-1.1a"), 4)
+	}
+
+	#[test]
+	fn negative_invalid_suffix() {
+		assert_eq!(Utils::numeric_part_end("-a"), 0)
+	}
+
+	#[test]
+	fn negative_sign() {
+		assert_eq!(Utils::numeric_part_end("-"), 0)
 	}
 }
