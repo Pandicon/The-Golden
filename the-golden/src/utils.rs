@@ -46,6 +46,12 @@ impl Utils {
 	pub fn numeric_part_end(input: &str) -> usize {
 		let mut i = 0;
 		let mut period = false;
+		let input = if input.starts_with('-') {
+			i = 1;
+			&input[1..]
+		} else {
+			input
+		};
 		for char in input.chars() {
 			match char {
 				'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {}
