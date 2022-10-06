@@ -17,7 +17,7 @@ impl Utils {
 	pub fn get_input_line() -> String {
 		let mut input = String::new();
 		std::io::stdin().read_line(&mut input).unwrap();
-		input.trim().to_string()
+		input
 	}
 
 	pub fn next_char(s: &str) -> (char, &str) {
@@ -41,5 +41,24 @@ impl Utils {
 			sebek[i] = Some(val);
 		}
 		sebek
+	}
+
+	pub fn numeric_part_end(input: &str) -> usize {
+		let mut i = 0;
+		let mut period = false;
+		for char in input.chars() {
+			match char {
+				'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {}
+				'.' => {
+					if period {
+						return i;
+					}
+					period = true;
+				}
+				_ => return i,
+			}
+			i += 1;
+		}
+		i
 	}
 }

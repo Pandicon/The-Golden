@@ -275,7 +275,7 @@ impl Runner {
 				"^" => main_active_memory ^= 1,
 				"$." => {
 					if self.input_cache.is_none() {
-						self.input_cache = Some(Utils::get_input_line());
+						self.input_cache = Some(Utils::get_input_line().trim().to_string());
 					}
 					let input = &self.input_cache.clone().unwrap();
 					self.input_cache = None;
@@ -288,7 +288,7 @@ impl Runner {
 				}
 				"$," => {
 					if self.input_cache.is_none() {
-						self.input_cache = Some(Utils::get_input_line());
+						self.input_cache = Some(Utils::get_input_line().trim().to_string());
 					}
 					let input = &self.input_cache.clone().unwrap();
 					let (char, remainder) = Utils::next_char(input);

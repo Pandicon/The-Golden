@@ -272,12 +272,15 @@ impl Runner {
 					if self.input_cache.is_none() {
 						self.input_cache = Some(Utils::get_input_line());
 					}
-					let input = &self.input_cache.clone().unwrap();
-					self.input_cache = None;
-					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = match input.parse::<f64>() {
+					let input = self.input_cache.clone().unwrap();
+					let input = input.as_str();
+					let numeric_part_end = Utils::numeric_part_end(input);
+					let numeric_part = &input[..numeric_part_end];
+					self.input_cache = if numeric_part_end == input.len() { None } else { Some(input[numeric_part_end..].to_string()) };
+					main_memory[main_active_memory][main_memory_pointers[main_active_memory]] = match numeric_part.parse::<f64>() {
 						Ok(val) => val,
 						Err(e) => {
-							return Err(format!("Failed to convert {} from input to a number: {}", input, e));
+							return Err(format!("Failed to convert {:?} from input to a number: {}", numeric_part, e));
 						}
 					}
 				}
