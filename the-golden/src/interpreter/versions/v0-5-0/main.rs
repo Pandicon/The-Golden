@@ -331,12 +331,13 @@ impl Runner {
 					}
 				}
 				"]" | "@]" => {
+					let start_index = *self.brackets.get(&self.program_pointer).unwrap();
 					if main_memory[main_active_memory][main_memory_pointers[main_active_memory]] == 0.0 {
-						if let Some(index) = self.loops.iter().position(|value| *value == self.program_pointer) {
+						if let Some(index) = self.loops.iter().position(|value| *value == start_index) {
 							self.loops.remove(index);
 						}
 					} else {
-						self.program_pointer = *self.brackets.get(&self.program_pointer).unwrap();
+						self.program_pointer = start_index;
 					}
 				}
 				"[@" => {
