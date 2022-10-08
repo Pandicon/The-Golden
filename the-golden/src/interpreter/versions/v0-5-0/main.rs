@@ -177,6 +177,10 @@ impl Runner {
 			println!("{}Local memory:", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
 			println!("{}{:?}", Utils::ansi_escape_text("94", "DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled), local_memory);
 		}
+		if self.flags.debug_heavy {
+			println!("{}Loops stack:", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled));
+			println!("{}{:?}", Utils::ansi_escape_text("34", "HEAVY DEBUG", INFO_PREFIX_LENGTH, self.ansi_enabled), self.loops)
+		}
 	}
 
 	pub fn evaluate_command(&mut self, command: &str, local_memory: &mut [Vec<f64>; 2], local_memory_pointers: &mut [usize; 2], active_local_memory: usize) -> Result<usize, String> {
