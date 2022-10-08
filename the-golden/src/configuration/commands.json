@@ -97,13 +97,6 @@
 						"can_be_local": true
 					},
 					{
-						"command": "]",
-						"regex": "\\]",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
 						"command": "[@",
 						"regex": "\\[@",
 						"chainable": false,
@@ -113,6 +106,13 @@
 					{
 						"command": "@]",
 						"regex": "@\\]",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "]",
+						"regex": "\\]",
 						"chainable": false,
 						"chain_optimisable": false,
 						"can_be_local": true
@@ -285,20 +285,6 @@
 						"can_be_local": true
 					},
 					{
-						"command": "[",
-						"regex": "\\[",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
-						"command": "]",
-						"regex": "\\]",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
 						"command": "[@",
 						"regex": "\\[@",
 						"chainable": false,
@@ -308,6 +294,20 @@
 					{
 						"command": "@]",
 						"regex": "@\\]",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "[",
+						"regex": "\\[",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "]",
+						"regex": "\\]",
 						"chainable": false,
 						"chain_optimisable": false,
 						"can_be_local": true
@@ -487,20 +487,6 @@
 						"can_be_local": true
 					},
 					{
-						"command": "[",
-						"regex": "\\[",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
-						"command": "]",
-						"regex": "\\]",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
 						"command": "[@",
 						"regex": "\\[@",
 						"chainable": false,
@@ -510,6 +496,20 @@
 					{
 						"command": "@]",
 						"regex": "@\\]",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "[",
+						"regex": "\\[",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "]",
+						"regex": "\\]",
 						"chainable": false,
 						"chain_optimisable": false,
 						"can_be_local": true
@@ -696,20 +696,6 @@
 						"can_be_local": true
 					},
 					{
-						"command": "[",
-						"regex": "\\[",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
-						"command": "]",
-						"regex": "\\]",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
 						"command": "[@",
 						"regex": "\\[@",
 						"chainable": false,
@@ -719,6 +705,20 @@
 					{
 						"command": "@]",
 						"regex": "@\\]",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "[",
+						"regex": "\\[",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "]",
+						"regex": "\\]",
 						"chainable": false,
 						"chain_optimisable": false,
 						"can_be_local": true
@@ -905,20 +905,6 @@
 						"can_be_local": true
 					},
 					{
-						"command": "[",
-						"regex": "\\[",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
-						"command": "]",
-						"regex": "\\]",
-						"chainable": false,
-						"chain_optimisable": false,
-						"can_be_local": true
-					},
-					{
 						"command": "[@",
 						"regex": "\\[@",
 						"chainable": false,
@@ -928,6 +914,20 @@
 					{
 						"command": "@]",
 						"regex": "@\\]",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "[",
+						"regex": "\\[",
+						"chainable": false,
+						"chain_optimisable": false,
+						"can_be_local": true
+					},
+					{
+						"command": "]",
+						"regex": "\\]",
 						"chainable": false,
 						"chain_optimisable": false,
 						"can_be_local": true
