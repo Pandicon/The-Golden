@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 use crate::Flags;
 use rand::Rng;
-use regex::Regex;
 
 #[path = "./brackets_matcher.rs"]
 mod brackets_matcher;
 use brackets_matcher::BracketsMatcher;
 #[path = "./lexer.rs"]
 mod lexer;
+pub use lexer::Rule;
 pub use lexer::Lexer;
 #[path = "./parser.rs"]
 mod parser;
@@ -30,7 +30,7 @@ pub struct Runner {
 
 	brackets: HashMap<usize, usize>,
 	raw_code: String,
-	rules: Vec<Regex>,
+	rules: Vec<Rule>,
 	code_path: std::path::PathBuf,
 
 	program_pointer: usize,
@@ -47,34 +47,34 @@ pub struct Runner {
 impl Runner {
 	pub fn new(raw_code: String, code_path: std::path::PathBuf, flags: Flags, ansi_enabled: bool) -> Self {
 		let rules = vec![
-			Regex::new(r"^(\|-?[0-9]*\|)*!").unwrap(),      // increment
-			Regex::new(r"^(\|-?[0-9]*\|)*~").unwrap(),      // decrement
-			Regex::new(r"^(\|-?[0-9]*\|)*\+").unwrap(),     // add
-			Regex::new(r"^(\|-?[0-9]*\|)*-").unwrap(),      // subtract
-			Regex::new(r"^(\|-?[0-9]*\|)*\*").unwrap(),     // multiply
-			Regex::new(r"^(\|-?[0-9]*\|)*/").unwrap(),      // divide
-			Regex::new(r"^`").unwrap(),                     // generate a random number from 0 (inclusive) to 1 (exclusive)
-			Regex::new(r"^(\|-?[0-9]*\|)*>").unwrap(),      // move right
-			Regex::new(r"^(\|-?[0-9]*\|)*<").unwrap(),      // move left
-			Regex::new(r"^_").unwrap(),                     // floor
-			Regex::new(r"^&").unwrap(),                     // ceil
-			Regex::new(r"^'").unwrap(),                     // switch between local and global memory
-			Regex::new(r"^\^").unwrap(),                    // switch active memory
-			Regex::new(r"^\[@?").unwrap(),                  // (do-)while start
-			Regex::new(r"^@?\]").unwrap(),                  // (do-)while end
-			Regex::new(r"^\$,").unwrap(),                   // input number
-			Regex::new(r"^,").unwrap(),                     // input character
-			Regex::new(r"^(\|-?[0-9]*\|)*\$\.").unwrap(),   // output number
-			Regex::new(r"^(\|-?[0-9]*\|)*\.").unwrap(),     // output character
-			Regex::new(r"^(\|-?[0-9]*\|)*\?=").unwrap(),    // break if active memory address is equal to inactive memory address
-			Regex::new(r"^(\|-?[0-9]*\|)*\?>").unwrap(),    // break if active memory address is greater than inactive memory address
-			Regex::new(r"^(\|-?[0-9]*\|)*\?<").unwrap(),    // break if active memory address is less than inactive memory address
-			Regex::new(r"^\?\?").unwrap(),                  // set current active memory address to its index
-			Regex::new(r"^;").unwrap(),                     // swap main and local memory addresses
-			Regex::new(r"^(:|:?\r?\n)").unwrap(),           // end of line
-			Regex::new("^\"[^\"]*\"").unwrap(),             // comments
-			Regex::new(r"^[ \t\f\v]").unwrap(),             // whitespace
-			Regex::new(crate::PREPROCESSOR_REGEX).unwrap(), //preprocessor regex
+			Rule::new(r"^(\|-?[0-9]*\|)*!", false),      // increment
+			Rule::new(r"^(\|-?[0-9]*\|)*~", false),      // decrement
+			Rule::new(r"^(\|-?[0-9]*\|)*\+", false),     // add
+			Rule::new(r"^(\|-?[0-9]*\|)*-", false),      // subtract
+			Rule::new(r"^(\|-?[0-9]*\|)*\*", false),     // multiply
+			Rule::new(r"^(\|-?[0-9]*\|)*/", false),      // divide
+			Rule::new(r"^`", false),                     // generate a random number from 0 (inclusive) to 1 (exclusive)
+			Rule::new(r"^(\|-?[0-9]*\|)*>", false),      // move right
+			Rule::new(r"^(\|-?[0-9]*\|)*<", false),      // move left
+			Rule::new(r"^_", false),                     // floor
+			Rule::new(r"^&", false),                     // ceil
+			Rule::new(r"^'", false),                     // switch between local and global memory
+			Rule::new(r"^\^", false),                    // switch active memory
+			Rule::new(r"^\[@?", false),                  // (do-)while start
+			Rule::new(r"^@?\]", false),                  // (do-)while end
+			Rule::new(r"^\$,", false),                   // input number
+			Rule::new(r"^,", false),                     // input character
+			Rule::new(r"^(\|-?[0-9]*\|)*\$\.", false),   // output number
+			Rule::new(r"^(\|-?[0-9]*\|)*\.", false),     // output character
+			Rule::new(r"^(\|-?[0-9]*\|)*\?=", false),    // break if active memory address is equal to inactive memory address
+			Rule::new(r"^(\|-?[0-9]*\|)*\?>", false),    // break if active memory address is greater than inactive memory address
+			Rule::new(r"^(\|-?[0-9]*\|)*\?<", false),    // break if active memory address is less than inactive memory address
+			Rule::new(r"^\?\?", false),                  // set current active memory address to its index
+			Rule::new(r"^;", false),                     // swap main and local memory addresses
+			Rule::new(r"^(:|:?\r?\n)", true),            // end of line
+			Rule::new("^\"[^\"]*\"", true),              // comments
+			Rule::new(r"^[ \t\f\v]", true),              // whitespace
+			Rule::new(crate::PREPROCESSOR_REGEX, false), //preprocessor regex
 		];
 		Self {
 			flags,

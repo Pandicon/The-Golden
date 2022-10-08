@@ -7,9 +7,24 @@ lazy_static! {
 }
 
 #[derive(Clone)]
+pub struct Rule {
+	pattern: Regex,
+	ignore: bool
+}
+
+impl Rule {
+	pub fn new(pattern: &str, ignore: bool) -> Self {
+		Self {
+			pattern: Regex::new(pattern).unwrap(),
+			ignore
+		}
+	}
+}
+
+#[derive(Clone)]
 pub struct Lexer {
 	text: String,
-	rules: Vec<Regex>,
+	rules: Vec<Rule>,
 	line: usize,
 	column: usize,
 	comment: bool,
@@ -18,7 +33,7 @@ pub struct Lexer {
 }
 
 impl Lexer {
-	pub fn new(text: String, rules: Vec<Regex>, file_path: std::path::PathBuf) -> Self {
+	pub fn new(text: String, rules: Vec<Rule>, file_path: std::path::PathBuf) -> Self {
 		Self {
 			text,
 			rules,
@@ -42,7 +57,7 @@ impl Lexer {
 			return Ok(None);
 		}
 		for rule in &self.rules {
-			if let Some(captures) = rule.captures(text) {
+			if let Some(captures) = rule.pattern.captures(text) {
 				if let Some(capture) = captures.get(0) {
 					let (command_line, command_column) = (self.line, self.column);
 					let command = capture.as_str();
@@ -53,6 +68,9 @@ impl Lexer {
 						self.column = command.split('\n').last().unwrap().len() + 1;
 					} else {
 						self.column += command_length;
+					}
+					if rule.ignore {
+						return self.next();
 					}
 					return Ok(Some((command.to_string(), command_line, command_column, self.file_path.clone())));
 				}
