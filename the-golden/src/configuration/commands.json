@@ -788,7 +788,7 @@
 					},
 					{
 						"command": ":",
-						"regex": ":\r?\n?",
+						"regex": "^(:|:?\r?\n)",
 						"chainable": false,
 						"chain_optimisable": false,
 						"can_be_local": false
@@ -1004,7 +1004,7 @@
 					},
 					{
 						"command": ":",
-						"regex": ":\r?\n?",
+						"regex": "^(:|:?\r?\n)",
 						"chainable": false,
 						"chain_optimisable": false,
 						"can_be_local": false
